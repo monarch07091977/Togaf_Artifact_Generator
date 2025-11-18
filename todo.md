@@ -121,3 +121,12 @@
 - [x] Enhance questionnaire questions with context explaining why each question matters
 - [x] Add example answers for each questionnaire question
 - [x] Create collapsible help sections throughout the editor
+
+
+## Enhancement Phase - Persistent Notion and Canva Links
+- [x] Add notionPageUrl and canvaDesignUrl fields to projects table
+- [x] Update backend to save URLs when creating Notion pages
+- [x] Update backend to save URLs when creating Canva designs
+- [x] Display persistent "Open in Notion" link on project detail page
+- [x] Display persistent "Open in Canva" link on project detail page
+- [ ] Show creation status and last sync time for integrations

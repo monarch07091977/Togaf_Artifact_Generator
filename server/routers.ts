@@ -37,7 +37,7 @@ export const appRouter = router({
           name: input.name,
           description: input.description,
           currentPhase: "Preliminary",
-          status: "draft",
+          status: "active",
         });
         return { id: projectId };
       }),
@@ -54,7 +54,7 @@ export const appRouter = router({
           name: z.string().optional(),
           description: z.string().optional(),
           currentPhase: z.string().optional(),
-          status: z.enum(["draft", "in_progress", "completed"]).optional(),
+          status: z.enum(["active", "on_hold", "completed"]).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -395,16 +395,30 @@ export const appRouter = router({
 
   canva: router({
     createPresentation: protectedProcedure
-      .input(z.object({ artifactId: z.number(), projectName: z.string() }))
-      .mutation(async ({ input }) => {
-        const { getArtifactById } = await import("./db");
+      .input(z.object({ projectId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const { getProjectById, updateProject, getArtifactsByProjectId } = await import("./db");
         const { createCanvaPresentation } = await import("./canvaService");
         
-        const artifact = await getArtifactById(input.artifactId);
-        if (!artifact) throw new Error("Artifact not found");
+        const project = await getProjectById(input.projectId);
+        if (!project) throw new Error("Project not found");
+        if (project.userId !== ctx.user.id) throw new Error("Unauthorized");
         
-        const result = await createCanvaPresentation(artifact, input.projectName);
-        return result;
+        // Get first artifact for presentation
+        const artifacts = await getArtifactsByProjectId(input.projectId);
+        if (artifacts.length === 0) {
+          throw new Error("No artifacts found. Create artifacts first.");
+        }
+        
+        const canvaResult = await createCanvaPresentation(artifacts[0], project.name);
+        
+        // Save Canva URL to database
+        await updateProject(input.projectId, {
+          canvaDesignUrl: canvaResult.editUrl,
+          canvaSyncedAt: new Date(),
+        });
+        
+        return { canvaUrl: canvaResult.editUrl };
       }),
     createDeck: protectedProcedure
       .input(z.object({ projectId: z.number() }))
@@ -442,14 +456,22 @@ export const appRouter = router({
   notion: router({
     createProject: protectedProcedure
       .input(z.object({ projectId: z.number() }))
-      .mutation(async ({ input }) => {
-        const { getProjectById } = await import("./db");
+      .mutation(async ({ input, ctx }) => {
+        const { getProjectById, updateProject } = await import("./db");
         const { createProjectInNotion } = await import("./notionService");
         
         const project = await getProjectById(input.projectId);
         if (!project) throw new Error("Project not found");
+        if (project.userId !== ctx.user.id) throw new Error("Unauthorized");
         
         const notionUrl = await createProjectInNotion(project);
+        
+        // Save Notion URL to database
+        await updateProject(input.projectId, {
+          notionPageUrl: notionUrl,
+          notionSyncedAt: new Date(),
+        });
+        
         return { notionUrl };
       }),
     createArtifact: protectedProcedure

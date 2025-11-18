@@ -27,27 +27,7 @@ export default function ProjectDetail() {
   const [notionUrl, setNotionUrl] = useState<string | null>(null);
   const [canvaUrl, setCanvaUrl] = useState<string | null>(null);
 
-  const createNotionProject = trpc.notion.createProject.useMutation({
-    onSuccess: (data) => {
-      toast.success("Project exported to Notion!");
-      setNotionUrl(data.notionUrl);
-    },
-    onError: (error) => {
-      toast.error("Failed to export to Notion: " + error.message);
-    },
-  });
-
-  const createCanvaDeck = trpc.canva.createDeck.useMutation({
-    onSuccess: (data) => {
-      toast.success("Presentation deck created in Canva!");
-      setCanvaUrl(data.editUrl);
-    },
-    onError: (error) => {
-      toast.error("Failed to create Canva deck: " + error.message);
-    },
-  });
-
-  const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
+  const { data: project, isLoading: projectLoading, refetch: refetchProject } = trpc.projects.get.useQuery(
     { id: projectId },
     { enabled: !!user && projectId > 0 }
   );
@@ -56,6 +36,36 @@ export default function ProjectDetail() {
     { projectId },
     { enabled: !!user && projectId > 0 }
   );
+  
+  // Initialize URLs from project data
+  if (project && !notionUrl && project.notionPageUrl) {
+    setNotionUrl(project.notionPageUrl);
+  }
+  if (project && !canvaUrl && project.canvaDesignUrl) {
+    setCanvaUrl(project.canvaDesignUrl);
+  }
+
+  const createNotionProject = trpc.notion.createProject.useMutation({
+    onSuccess: (data) => {
+      setNotionUrl(data.notionUrl);
+      refetchProject(); // Refresh project data to get updated URL
+      toast.success("Project exported to Notion successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to export to Notion: " + error.message);
+    },
+  });
+
+  const createCanvaDeck = trpc.canva.createDeck.useMutation({
+    onSuccess: (data) => {
+      setCanvaUrl(data.editUrl);
+      refetchProject(); // Refresh project data to get updated URL
+      toast.success("Presentation deck created in Canva!");
+    },
+    onError: (error) => {
+      toast.error("Failed to create Canva deck: " + error.message);
+    },
+  });
 
   const createArtifact = trpc.artifacts.create.useMutation({
     onSuccess: (data) => {
@@ -128,7 +138,7 @@ export default function ProjectDetail() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant={project.status === "completed" ? "default" : "secondary"} className="text-sm">
-              {project.status.replace("_", " ")}
+              {(project.status || "active").replace("_", " ")}
             </Badge>
             {notionUrl ? (
               <Button variant="outline" asChild>

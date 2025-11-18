@@ -30,11 +30,15 @@ export type InsertUser = typeof users.$inferInsert;
  */
 export const projects = mysqlTable("projects", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: int("userId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
-  currentPhase: varchar("currentPhase", { length: 50 }).notNull().default("Preliminary"),
-  status: mysqlEnum("status", ["draft", "in_progress", "completed"]).default("draft").notNull(),
+  currentPhase: varchar("currentPhase", { length: 100 }).default("Preliminary"),
+  status: mysqlEnum("status", ["active", "completed", "on_hold"]).default("active"),
+  notionPageUrl: text("notionPageUrl"),
+  canvaDesignUrl: text("canvaDesignUrl"),
+  notionSyncedAt: timestamp("notionSyncedAt"),
+  canvaSyncedAt: timestamp("canvaSyncedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
