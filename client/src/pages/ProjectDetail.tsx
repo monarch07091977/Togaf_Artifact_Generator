@@ -12,7 +12,7 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { TOGAF_ARTIFACTS, getArtifactsByPhase } from "../../../shared/togafArtifacts";
+import { TOGAF_ARTIFACTS, getArtifactsByPhase, ArtifactDefinition } from "../../../shared/togafArtifacts";
 import { ExternalLink, FileDown, Presentation } from "lucide-react";
 
 export default function ProjectDetail() {
@@ -23,6 +23,7 @@ export default function ProjectDetail() {
   const [selectedPhase, setSelectedPhase] = useState<string>(ADM_PHASES[0]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedArtifactDef, setSelectedArtifactDef] = useState<string>("");
+  const selectedArtifact: ArtifactDefinition | undefined = selectedArtifactDef ? TOGAF_ARTIFACTS[selectedArtifactDef] : undefined;
   const [notionUrl, setNotionUrl] = useState<string | null>(null);
   const [canvaUrl, setCanvaUrl] = useState<string | null>(null);
 
@@ -231,10 +232,33 @@ export default function ProjectDetail() {
                               ))}
                             </SelectContent>
                           </Select>
-                          {selectedArtifactDef && (
-                            <p className="text-sm text-muted-foreground mt-2">
-                              {TOGAF_ARTIFACTS[selectedArtifactDef].description}
-                            </p>
+                          {selectedArtifact && (
+                            <Card className="bg-muted/50 mt-3">
+                              <CardHeader className="pb-3">
+                                <CardTitle className="text-sm font-medium">About this Artifact</CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-3 text-sm">
+                                <div>
+                                  <p className="font-medium text-foreground mb-1">Purpose:</p>
+                                  <p className="text-muted-foreground">{selectedArtifact.purpose}</p>
+                                </div>
+                                <div>
+                                  <p className="font-medium text-foreground mb-1">Typical Contents:</p>
+                                  <ul className="list-disc list-inside text-muted-foreground space-y-0.5">
+                                    {selectedArtifact.typicalContents.slice(0, 4).map((item, idx) => (
+                                      <li key={idx} className="text-xs">{item}</li>
+                                    ))}
+                                    {selectedArtifact.typicalContents.length > 4 && (
+                                      <li className="text-xs italic">And {selectedArtifact.typicalContents.length - 4} more...</li>
+                                    )}
+                                  </ul>
+                                </div>
+                                <div>
+                                  <p className="font-medium text-foreground mb-1">ADM Usage:</p>
+                                  <p className="text-muted-foreground text-xs">{selectedArtifact.admUsage}</p>
+                                </div>
+                              </CardContent>
+                            </Card>
                           )}
                         </div>
                       </div>

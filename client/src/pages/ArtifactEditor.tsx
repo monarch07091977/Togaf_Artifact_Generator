@@ -12,6 +12,7 @@ import { useLocation, useRoute } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
+import { TOGAF_ARTIFACTS } from "../../../shared/togafArtifacts";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -217,7 +218,7 @@ export default function ArtifactEditor() {
 
       <div className="mb-8">
         <div className="flex items-start justify-between">
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold tracking-tight">{artifact.name}</h1>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline">{artifact.type}</Badge>
@@ -229,6 +230,11 @@ export default function ArtifactEditor() {
                 {artifact.status.replace("_", " ")}
               </Badge>
             </div>
+            {TOGAF_ARTIFACTS[artifact.type.toLowerCase().replace(/ /g, "-")] && (
+              <p className="text-sm text-muted-foreground mt-3 max-w-3xl">
+                {TOGAF_ARTIFACTS[artifact.type.toLowerCase().replace(/ /g, "-")].description}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <DropdownMenu>
@@ -411,5 +417,3 @@ export default function ArtifactEditor() {
   );
 }
 
-// Import TOGAF_ARTIFACTS at the top
-import { TOGAF_ARTIFACTS } from "../../../shared/togafArtifacts";

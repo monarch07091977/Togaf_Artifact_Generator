@@ -104,3 +104,11 @@
 - [x] Add Canva editor integration for customization
 - [x] Build presentation deck generation from multiple artifacts
 - [x] Add export from Canva to application
+
+
+## Enhancement Phase - Artifact Descriptions
+- [x] Add detailed descriptions for all 14 catalog types
+- [x] Add detailed descriptions for all 10 matrix types
+- [x] Add detailed descriptions for all 32 diagram types
+- [x] Include purpose, typical contents, and ADM usage for each artifact
+- [x] Update UI to display descriptions in artifact creation and editor
