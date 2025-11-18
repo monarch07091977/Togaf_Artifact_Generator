@@ -45,27 +45,38 @@ export default function ProjectDetail() {
     setCanvaUrl(project.canvaDesignUrl);
   }
 
-  const createNotionProject = trpc.notion.createProject.useMutation({
-    onSuccess: (data) => {
-      setNotionUrl(data.notionUrl);
-      refetchProject(); // Refresh project data to get updated URL
-      toast.success("Project exported to Notion successfully!");
-    },
-    onError: (error) => {
-      toast.error("Failed to export to Notion: " + error.message);
-    },
-  });
+  const [isExporting, setIsExporting] = useState(false);
+  const utils = trpc.useUtils();
+  
+  const exportToNotion = async () => {
+    if (!projectId || isExporting) return;
+    
+    setIsExporting(true);
+    try {
+      const data = await utils.client.notion.exportProject.query({ projectId });    
+      // Download as Markdown file
+      const blob = new Blob([data.markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${data.projectName.replace(/[^a-z0-9]/gi, '_')}_notion_export.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success("Markdown file downloaded! Import it to Notion.");
+    } catch (error) {
+      toast.error("Failed to export: " + (error as Error).message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
-  const createCanvaDeck = trpc.canva.createDeck.useMutation({
-    onSuccess: (data) => {
-      setCanvaUrl(data.editUrl);
-      refetchProject(); // Refresh project data to get updated URL
-      toast.success("Presentation deck created in Canva!");
-    },
-    onError: (error) => {
-      toast.error("Failed to create Canva deck: " + error.message);
-    },
-  });
+  const exportToCanva = () => {
+    if (!projectId) return;
+    toast.info("Canva export coming soon! Use PDF export for now.");
+  };
 
   const createArtifact = trpc.artifacts.create.useMutation({
     onSuccess: (data) => {
@@ -150,11 +161,10 @@ export default function ProjectDetail() {
             ) : (
               <Button
                 variant="outline"
-                onClick={() => createNotionProject.mutate({ projectId })}
-                disabled={createNotionProject.isPending}
+                onClick={exportToNotion}
               >
                 <FileDown className="mr-2 h-4 w-4" />
-                {createNotionProject.isPending ? "Exporting..." : "Export to Notion"}
+                Export to Notion
               </Button>
             )}
             {canvaUrl ? (
@@ -167,11 +177,10 @@ export default function ProjectDetail() {
             ) : (
               <Button
                 variant="outline"
-                onClick={() => createCanvaDeck.mutate({ projectId })}
-                disabled={createCanvaDeck.isPending}
+                onClick={exportToCanva}
               >
                 <Presentation className="mr-2 h-4 w-4" />
-                {createCanvaDeck.isPending ? "Creating..." : "Create in Canva"}
+                Export for Canva
               </Button>
             )}
           </div>

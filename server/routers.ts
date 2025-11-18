@@ -453,26 +453,46 @@ export const appRouter = router({
       }),
   }),
 
-  notion: router({
-    createProject: protectedProcedure
+  notion: router({  
+    exportProject: protectedProcedure
       .input(z.object({ projectId: z.number() }))
-      .mutation(async ({ input, ctx }) => {
-        const { getProjectById, updateProject } = await import("./db");
-        const { createProjectInNotion } = await import("./notionService");
+      .query(async ({ input, ctx }) => {
+        const { getProjectById, getArtifactsByProjectId } = await import("./db");
+        const { ADM_PHASES } = await import("../shared/togafArtifacts");
         
         const project = await getProjectById(input.projectId);
         if (!project) throw new Error("Project not found");
         if (project.userId !== ctx.user.id) throw new Error("Unauthorized");
         
-        const notionUrl = await createProjectInNotion(project);
+        const artifacts = await getArtifactsByProjectId(input.projectId);
         
-        // Save Notion URL to database
-        await updateProject(input.projectId, {
-          notionPageUrl: notionUrl,
-          notionSyncedAt: new Date(),
-        });
+        // Generate Markdown content for Notion
+        let markdown = `# [TOGAF] ${project.name}\n\n`;
+        markdown += `## Project Overview\n`;
+        markdown += `${project.description || 'No description provided'}\n\n`;
+        markdown += `**Current Phase:** ${project.currentPhase}\n`;
+        markdown += `**Status:** ${project.status}\n`;
+        markdown += `**Created:** ${new Date(project.createdAt).toLocaleDateString()}\n\n`;
+        markdown += `---\n\n`;
+        markdown += `## ADM Phases\n\n`;
         
-        return { notionUrl };
+        for (const phase of ADM_PHASES) {
+          markdown += `### ${phase}\n\n`;
+          const phaseArtifacts = artifacts.filter(a => a.phase === phase);
+          if (phaseArtifacts.length > 0) {
+            phaseArtifacts.forEach(artifact => {
+              markdown += `#### ${artifact.name} (${artifact.type})\n`;
+              markdown += `**Status:** ${artifact.status}\n\n`;
+              if (artifact.content) {
+                markdown += artifact.content + '\n\n';
+              }
+            });
+          } else {
+            markdown += `*No artifacts yet*\n\n`;
+          }
+        }
+        
+        return { markdown, projectName: project.name };
       }),
     createArtifact: protectedProcedure
       .input(

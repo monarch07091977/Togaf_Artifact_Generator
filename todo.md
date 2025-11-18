@@ -139,3 +139,11 @@
 - [x] Fix Canva button to show persistent link after design creation
 - [ ] Improve error handling for MCP integrations
 - [x] Debug why manus-mcp-cli not found despite full path - shell escaping issue fixed
+
+
+## Client-Side Integration Workaround
+- [x] Remove server-side Notion MCP integration
+- [x] Remove server-side Canva MCP integration
+- [x] Create simple export to Markdown/JSON for manual Notion import
+- [ ] Create downloadable content packages for Canva templates
+- [ ] Add user instructions for manual import to Notion/Canva
