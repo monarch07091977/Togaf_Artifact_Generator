@@ -165,3 +165,9 @@
 - [x] Highlight completion status of prerequisite artifacts
 - [ ] Show warning when creating artifact without prerequisites completed
 - [ ] Add visual dependency flow diagram
+
+
+## UI Bug Fixes - Delete Buttons
+- [x] Fix missing delete button on Projects page (was hidden, now shows on hover)
+- [x] Fix missing delete button on artifact cards in ProjectDetail page (added group class)
+- [x] Ensure delete buttons are visible and functional

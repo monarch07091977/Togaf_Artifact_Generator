@@ -320,7 +320,7 @@ export default function ProjectDetail() {
                     {phaseArtifacts.map((artifact) => (
                       <Card
                         key={artifact.id}
-                        className="hover:shadow-md transition-shadow cursor-pointer"
+                        className="hover:shadow-md transition-shadow cursor-pointer group"
                         onClick={() => setLocation(`/artifacts/${artifact.id}`)}
                       >
                         <CardHeader>
