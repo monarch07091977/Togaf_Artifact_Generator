@@ -130,3 +130,7 @@
 - [x] Display persistent "Open in Notion" link on project detail page
 - [x] Display persistent "Open in Canva" link on project detail page
 - [ ] Show creation status and last sync time for integrations
+
+
+## Bug Fixes
+- [x] Fix project creation error with timestamp fields (notionSyncedAt, canvaSyncedAt)

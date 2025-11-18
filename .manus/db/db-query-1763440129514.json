@@ -1,0 +1,29 @@
+{
+  "query": "SHOW CREATE TABLE projects",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user MCXikgkEWzjEGDB.4f9baeb9deaf --database fq5wr6YzXYEsLcWqw7mDwv --execute SHOW CREATE TABLE projects",
+  "rows": [
+    {
+      "Table": "projects",
+      "Create Table": "CREATE TABLE `projects` ("
+    }
+  ],
+  "messages": [
+    "  `id` int(11) NOT NULL AUTO_INCREMENT,",
+    "  `userId` int(11) NOT NULL,",
+    "  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,",
+    "  `description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `currentPhase` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'Preliminary',",
+    "  `status` enum('active','completed','on_hold') COLLATE utf8mb4_unicode_ci DEFAULT 'active',",
+    "  `notionPageUrl` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `canvaDesignUrl` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `notionSyncedAt` timestamp NULL DEFAULT NULL,",
+    "  `canvaSyncedAt` timestamp NULL DEFAULT NULL,",
+    "  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=30002"
+  ],
+  "stdout": "Table\tCreate Table\nprojects\tCREATE TABLE `projects` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `userId` int(11) NOT NULL,\n  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `currentPhase` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'Preliminary',\n  `status` enum('active','completed','on_hold') COLLATE utf8mb4_unicode_ci DEFAULT 'active',\n  `notionPageUrl` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `canvaDesignUrl` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `notionSyncedAt` timestamp NULL DEFAULT NULL,\n  `canvaSyncedAt` timestamp NULL DEFAULT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=30002\n",
+  "stderr": "",
+  "execution_time_ms": 1526
+}
