@@ -25,21 +25,29 @@ const getQuestionnaireForArtifact = (artifactName: string) => {
       id: "scope",
       text: "What is the scope of this artifact?",
       placeholder: "Describe the boundaries and coverage...",
+      context: "Defining scope helps establish clear boundaries for what this artifact covers and what it doesn't. This prevents scope creep and ensures focused, actionable content.",
+      example: "Example: For a Principles Catalog, scope might be 'Enterprise-wide architecture principles applicable to all IT initiatives across the organization, excluding project-specific guidelines.'"
     },
     {
       id: "stakeholders",
       text: "Who are the key stakeholders?",
       placeholder: "List primary stakeholders and their roles...",
+      context: "Identifying stakeholders ensures the artifact addresses the right audience's concerns and gets proper review. Different stakeholders have different needs and perspectives.",
+      example: "Example: CIO (decision authority), Enterprise Architects (content owners), Project Managers (consumers), Business Unit Leaders (reviewers)"
     },
     {
       id: "objectives",
       text: "What are the main objectives?",
       placeholder: "Define the goals and expected outcomes...",
+      context: "Clear objectives help measure success and guide content creation. They ensure the artifact delivers value and supports business goals.",
+      example: "Example: 1) Establish consistent decision-making framework, 2) Reduce technology fragmentation, 3) Enable faster solution delivery, 4) Ensure regulatory compliance"
     },
     {
       id: "constraints",
       text: "What constraints or limitations exist?",
       placeholder: "Describe technical, business, or regulatory constraints...",
+      context: "Understanding constraints helps create realistic, achievable architecture. Constraints shape what's possible and guide trade-off decisions.",
+      example: "Example: Budget limit of $2M, must complete within 6 months, must comply with GDPR and SOX, legacy systems cannot be replaced until 2026"
     },
   ];
 
@@ -51,7 +59,7 @@ export default function ArtifactEditor() {
   const artifactId = params?.id ? parseInt(params.id) : 0;
   const [, setLocation] = useLocation();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("questionnaire");
+  const [activeTab, setActiveTab] = useState("guidance");
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const exportArtifact = trpc.export.artifact.useMutation({
@@ -270,6 +278,10 @@ export default function ArtifactEditor() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
+          <TabsTrigger value="guidance">
+            <Lightbulb className="mr-2 h-4 w-4" />
+            Guidance
+          </TabsTrigger>
           <TabsTrigger value="questionnaire">Questionnaire</TabsTrigger>
           <TabsTrigger value="content">Generated Content</TabsTrigger>
           <TabsTrigger value="assumptions">
@@ -281,6 +293,62 @@ export default function ArtifactEditor() {
             )}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="guidance" className="space-y-6">
+          {artifactDefId && TOGAF_ARTIFACTS[artifactDefId] && (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>About This Artifact</CardTitle>
+                  <CardDescription>{TOGAF_ARTIFACTS[artifactDefId].description}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2">Purpose</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {TOGAF_ARTIFACTS[artifactDefId].purpose}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-2">How It's Used in ADM</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {TOGAF_ARTIFACTS[artifactDefId].admUsage}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Typical Contents</CardTitle>
+                  <CardDescription>
+                    This artifact should typically include the following elements
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {TOGAF_ARTIFACTS[artifactDefId].typicalContents.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                        <span className="text-sm">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Alert>
+                <Lightbulb className="h-4 w-4" />
+                <AlertTitle>Getting Started</AlertTitle>
+                <AlertDescription>
+                  Start by filling out the questionnaire in the next tab. The questions are designed to gather
+                  the essential information needed for this artifact. Your answers will help the AI generate
+                  comprehensive and contextually relevant content.
+                </AlertDescription>
+              </Alert>
+            </>
+          )}
+        </TabsContent>
 
         <TabsContent value="questionnaire" className="space-y-6">
           <Card>
@@ -296,15 +364,22 @@ export default function ArtifactEditor() {
                 const hasAutoData = autoData && !autoData.isUserProvided;
                 
                 return (
-                  <div key={question.id} className="space-y-2">
+                  <div key={question.id} className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor={question.id}>{question.text}</Label>
+                      <Label htmlFor={question.id} className="text-base font-medium">{question.text}</Label>
                       {hasAutoData && (
                         <Badge variant="secondary" className="text-xs">
                           Auto-populated from {autoData.source}
                         </Badge>
                       )}
                     </div>
+                    {question.context && (
+                      <Alert className="bg-blue-50/50 border-blue-200">
+                        <AlertDescription className="text-xs text-muted-foreground">
+                          <strong>Why this matters:</strong> {question.context}
+                        </AlertDescription>
+                      </Alert>
+                    )}
                     <Textarea
                       id={question.id}
                       placeholder={question.placeholder}
@@ -318,6 +393,11 @@ export default function ArtifactEditor() {
                       rows={4}
                       className={hasAutoData ? "border-blue-300 bg-blue-50/50" : ""}
                     />
+                    {question.example && !answers[question.id] && (
+                      <p className="text-xs text-muted-foreground italic">
+                        💡 {question.example}
+                      </p>
+                    )}
                     {hasAutoData && (
                       <p className="text-xs text-muted-foreground">
                         This field was automatically populated. You can edit it to override.

@@ -112,3 +112,12 @@
 - [x] Add detailed descriptions for all 32 diagram types
 - [x] Include purpose, typical contents, and ADM usage for each artifact
 - [x] Update UI to display descriptions in artifact creation and editor
+
+
+## Enhancement Phase - Artifact Editor Guidance
+- [x] Add prominent artifact description panel in editor showing purpose and ADM usage
+- [x] Display typical contents checklist for each artifact type
+- [x] Add examples section showing sample inputs for the artifact
+- [x] Enhance questionnaire questions with context explaining why each question matters
+- [x] Add example answers for each questionnaire question
+- [x] Create collapsible help sections throughout the editor
