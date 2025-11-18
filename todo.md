@@ -147,3 +147,21 @@
 - [x] Create simple export to Markdown/JSON for manual Notion import
 - [ ] Create downloadable content packages for Canva templates
 - [ ] Add user instructions for manual import to Notion/Canva
+
+
+## Edit and Delete Functionality
+- [x] Add delete project functionality with confirmation dialog
+- [x] Add delete artifact functionality with confirmation dialog
+- [ ] Implement edit artifact content and metadata
+- [ ] Add edit project name and description
+- [ ] Add cascade delete (deleting project deletes all artifacts)
+- [ ] Add undo/confirmation for destructive operations
+
+
+## Prerequisite Artifact Tracking
+- [x] Define prerequisite artifacts for each artifact type based on TOGAF ADM dependencies
+- [x] Add prerequisites field to artifact definitions
+- [x] Display prerequisite artifacts in artifact editor
+- [x] Highlight completion status of prerequisite artifacts
+- [ ] Show warning when creating artifact without prerequisites completed
+- [ ] Add visual dependency flow diagram

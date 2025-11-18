@@ -7,12 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, Sparkles, Save, AlertCircle, CheckCircle2, Lightbulb } from "lucide-react";
+import { ArrowLeft, Sparkles, Save, AlertCircle, CheckCircle2, Lightbulb, Link as LinkIcon } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { TOGAF_ARTIFACTS } from "../../../shared/togafArtifacts";
+import { getPrerequisites } from "../../../shared/artifactPrerequisites";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -76,6 +77,11 @@ export default function ArtifactEditor() {
   const { data: artifact, isLoading, refetch } = trpc.artifacts.get.useQuery(
     { id: artifactId },
     { enabled: !!user && artifactId > 0 }
+  );
+
+  const { data: projectArtifacts } = trpc.artifacts.listByProject.useQuery(
+    { projectId: artifact?.projectId || 0 },
+    { enabled: !!artifact?.projectId }
   );
 
   const { data: responses } = trpc.questionnaire.getResponses.useQuery(
@@ -317,6 +323,57 @@ export default function ArtifactEditor() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Prerequisites Section */}
+              {artifactDefId && getPrerequisites(artifactDefId).length > 0 && (
+                <Card className="border-blue-200 bg-blue-50/50">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <LinkIcon className="h-5 w-5 text-blue-600" />
+                      <CardTitle className="text-blue-900">Prerequisite Artifacts</CardTitle>
+                    </div>
+                    <CardDescription className="text-blue-700">
+                      These artifacts should be completed first as they provide input for this artifact
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {getPrerequisites(artifactDefId).map((prereqId) => {
+                        const prereq = TOGAF_ARTIFACTS[prereqId];
+                        if (!prereq) return null;
+                        
+                        // Check if prerequisite is completed in current project
+                        const isCompleted = projectArtifacts?.some(
+                          (a) => a.name === prereq.name && a.status === "completed"
+                        );
+                        
+                        return (
+                          <div
+                            key={prereqId}
+                            className="flex items-center justify-between p-3 bg-white rounded-lg border"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{prereq.name}</p>
+                              <p className="text-xs text-muted-foreground">{prereq.type}</p>
+                            </div>
+                            {isCompleted ? (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Completed
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                Pending
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               <Card>
                 <CardHeader>

@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
-import { Plus, FolderOpen, Calendar, ArrowRight } from "lucide-react";
+import { Plus, FolderOpen, Calendar, ArrowRight, Trash2, Edit } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -17,6 +18,8 @@ export default function Projects() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
 
   const { data: projects, isLoading, refetch } = trpc.projects.list.useQuery(undefined, {
     enabled: !!user,
@@ -36,12 +39,36 @@ export default function Projects() {
     },
   });
 
+  const deleteProject = trpc.projects.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Project deleted successfully");
+      refetch();
+      setDeleteDialogOpen(false);
+      setProjectToDelete(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to delete project: " + error.message);
+    },
+  });
+
   const handleCreate = () => {
     if (!name.trim()) {
       toast.error("Project name is required");
       return;
     }
     createProject.mutate({ name, description });
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, projectId: number) => {
+    e.stopPropagation();
+    setProjectToDelete(projectId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (projectToDelete) {
+      deleteProject.mutate({ id: projectToDelete });
+    }
   };
 
   if (authLoading || isLoading) {
@@ -147,7 +174,16 @@ export default function Projects() {
                       {project.description || "No description provided"}
                     </CardDescription>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => handleDeleteClick(e, project.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -183,6 +219,26 @@ export default function Projects() {
           ))}
         </div>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this project and all its artifacts. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

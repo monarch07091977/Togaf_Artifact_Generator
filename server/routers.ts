@@ -128,6 +128,13 @@ export const appRouter = router({
         await updateArtifact(id, data);
         return { success: true };
       }),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { deleteArtifact } = await import("./db");
+        await deleteArtifact(input.id);
+        return { success: true };
+      }),
     generate: protectedProcedure
       .input(
         z.object({

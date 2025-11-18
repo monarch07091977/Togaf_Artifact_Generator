@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, Plus, FileText, Network, BarChart3 } from "lucide-react";
+import { ArrowLeft, Plus, FileText, Network, BarChart3, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useLocation, useRoute } from "wouter";
 import { ADM_PHASES } from "../../../shared/togafArtifacts";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -26,6 +27,8 @@ export default function ProjectDetail() {
   const selectedArtifact: ArtifactDefinition | undefined = selectedArtifactDef ? TOGAF_ARTIFACTS[selectedArtifactDef] : undefined;
   const [notionUrl, setNotionUrl] = useState<string | null>(null);
   const [canvaUrl, setCanvaUrl] = useState<string | null>(null);
+  const [deleteArtifactDialogOpen, setDeleteArtifactDialogOpen] = useState(false);
+  const [artifactToDelete, setArtifactToDelete] = useState<number | null>(null);
 
   const { data: project, isLoading: projectLoading, refetch: refetchProject } = trpc.projects.get.useQuery(
     { id: projectId },
@@ -77,6 +80,18 @@ export default function ProjectDetail() {
     if (!projectId) return;
     toast.info("Canva export coming soon! Use PDF export for now.");
   };
+
+  const deleteArtifact = trpc.artifacts.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Artifact deleted successfully");
+      refetchProject();
+      setDeleteArtifactDialogOpen(false);
+      setArtifactToDelete(null);
+    },
+    onError: (error: any) => {
+      toast.error("Failed to delete artifact: " + error.message);
+    },
+  });
 
   const createArtifact = trpc.artifacts.create.useMutation({
     onSuccess: (data) => {
@@ -310,10 +325,26 @@ export default function ProjectDetail() {
                       >
                         <CardHeader>
                           <div className="flex items-start justify-between gap-2">
-                            <CardTitle className="text-base">{artifact.name}</CardTitle>
-                            <Badge variant="outline" className="text-xs shrink-0">
-                              {artifact.type}
-                            </Badge>
+                            <div className="flex-1">
+                              <CardTitle className="text-base">{artifact.name}</CardTitle>
+                            </div>
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              <Badge variant="outline" className="text-xs shrink-0">
+                                {artifact.type}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setArtifactToDelete(artifact.id);
+                                  setDeleteArtifactDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
                           </div>
                         </CardHeader>
                         <CardContent>
@@ -342,6 +373,30 @@ export default function ProjectDetail() {
           </TabsContent>
         ))}
       </Tabs>
+
+      <AlertDialog open={deleteArtifactDialogOpen} onOpenChange={setDeleteArtifactDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Artifact?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this artifact and all its content, questionnaire responses, and assumptions. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (artifactToDelete) {
+                  deleteArtifact.mutate({ id: artifactToDelete });
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
