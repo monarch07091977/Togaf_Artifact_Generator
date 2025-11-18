@@ -1,20 +1,53 @@
-import { spawn } from "child_process";
+import { spawn, exec } from "child_process";
+import { promisify } from "util";
 import { Project, Artifact } from "../drizzle/schema";
 import { ADM_PHASES } from "../shared/togafArtifacts";
+
+const execAsync = promisify(exec);
+
+// Cache the manus-mcp-cli path
+let mcpCliPath: string | null = null;
+
+/**
+ * Find the manus-mcp-cli executable path
+ */
+async function findMcpCliPath(): Promise<string> {
+  if (mcpCliPath) return mcpCliPath;
+  
+  try {
+    const { stdout } = await execAsync('which manus-mcp-cli');
+    mcpCliPath = stdout.trim();
+    console.log('Found manus-mcp-cli at:', mcpCliPath);
+    return mcpCliPath;
+  } catch (error) {
+    // Fallback to common paths
+    const paths = ['/usr/local/bin/manus-mcp-cli', '/usr/bin/manus-mcp-cli', 'manus-mcp-cli'];
+    for (const path of paths) {
+      try {
+        await execAsync(`test -x ${path}`);
+        mcpCliPath = path;
+        console.log('Found manus-mcp-cli at:', mcpCliPath);
+        return mcpCliPath;
+      } catch {}
+    }
+    throw new Error('manus-mcp-cli not found in PATH');
+  }
+}
 
 /**
  * Execute MCP command for Notion using spawn to avoid shell escaping issues
  */
 async function executeMCP(toolName: string, input: any): Promise<any> {
   const inputJson = JSON.stringify(input);
+  const cliPath = await findMcpCliPath();
   
   return new Promise((resolve, reject) => {
     const args = ['tool', 'call', toolName, '--server', 'notion', '--input', inputJson];
     
-    console.log('Executing MCP command:', '/usr/local/bin/manus-mcp-cli', args[0], args[1], args[2], args[3], args[4]);
+    console.log('Executing MCP command:', cliPath, args.slice(0, 5).join(' '));
     
-    const child = spawn('/usr/local/bin/manus-mcp-cli', args, {
-      env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin' }
+    const child = spawn(cliPath, args, {
+      env: { ...process.env, PATH: `${process.env.PATH}:/usr/local/bin:/usr/bin:/bin` }
     });
     
     let stdout = '';

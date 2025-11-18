@@ -135,7 +135,7 @@
 ## Bug Fixes
 - [x] Fix project creation error with timestamp fields (notionSyncedAt, canvaSyncedAt)
 
-- [x] Fix Notion export MCP CLI error (command not found) - using spawn instead of exec
+- [x] Fix Notion export MCP CLI error - spawn ENOENT error, using dynamic path detection
 - [x] Fix Canva button to show persistent link after design creation
 - [ ] Improve error handling for MCP integrations
 - [x] Debug why manus-mcp-cli not found despite full path - shell escaping issue fixed
