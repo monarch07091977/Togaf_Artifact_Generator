@@ -1,44 +1,65 @@
-import { exec } from "child_process";
-import { promisify } from "util";
+import { spawn } from "child_process";
 import { Project, Artifact } from "../drizzle/schema";
 import { ADM_PHASES } from "../shared/togafArtifacts";
 
-const execAsync = promisify(exec);
-
 /**
- * Execute MCP command for Notion
+ * Execute MCP command for Notion using spawn to avoid shell escaping issues
  */
 async function executeMCP(toolName: string, input: any): Promise<any> {
   const inputJson = JSON.stringify(input);
-  // Use full path to manus-mcp-cli and proper PATH
-  const command = `/usr/local/bin/manus-mcp-cli tool call ${toolName} --server notion --input '${inputJson}'`;
   
-  try {
-    const { stdout, stderr } = await execAsync(command, {
+  return new Promise((resolve, reject) => {
+    const args = ['tool', 'call', toolName, '--server', 'notion', '--input', inputJson];
+    
+    console.log('Executing MCP command:', '/usr/local/bin/manus-mcp-cli', args[0], args[1], args[2], args[3], args[4]);
+    
+    const child = spawn('/usr/local/bin/manus-mcp-cli', args, {
       env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin' }
     });
     
-    console.log('Notion MCP stdout:', stdout);
-    if (stderr) {
-      console.log('Notion MCP stderr:', stderr);
-    }
+    let stdout = '';
+    let stderr = '';
     
-    // Parse the result from stdout
-    const lines = stdout.split('\n');
-    const resultLine = lines.find(line => line.includes('Result:'));
-    if (resultLine) {
-      const jsonStart = resultLine.indexOf('{');
-      if (jsonStart !== -1) {
-        return JSON.parse(resultLine.substring(jsonStart));
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+    
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+    
+    child.on('close', (code) => {
+      if (code !== 0) {
+        console.error('Notion MCP error:', stderr);
+        reject(new Error(`Notion integration failed: ${stderr}`));
+        return;
       }
-    }
+      
+      console.log('Notion MCP stdout:', stdout.substring(0, 500));
+      
+      // Parse the result from stdout
+      const lines = stdout.split('\n');
+      const resultLine = lines.find(line => line.includes('Result:'));
+      if (resultLine) {
+        const jsonStart = resultLine.indexOf('{');
+        if (jsonStart !== -1) {
+          try {
+            resolve(JSON.parse(resultLine.substring(jsonStart)));
+            return;
+          } catch (e) {
+            console.error('Failed to parse result:', e);
+          }
+        }
+      }
+      
+      resolve({ success: true, output: stdout });
+    });
     
-    return { success: true, output: stdout };
-  } catch (error: any) {
-    console.error('Notion MCP error:', error);
-    console.error('Command:', command);
-    throw new Error(`Notion integration failed: ${error.message}`);
-  }
+    child.on('error', (error) => {
+      console.error('Notion MCP spawn error:', error);
+      reject(new Error(`Failed to spawn manus-mcp-cli: ${error.message}`));
+    });
+  });
 }
 
 /**
