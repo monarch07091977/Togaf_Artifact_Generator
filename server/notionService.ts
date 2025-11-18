@@ -9,13 +9,18 @@ const execAsync = promisify(exec);
  * Execute MCP command for Notion
  */
 async function executeMCP(toolName: string, input: any): Promise<any> {
-  const inputJson = JSON.stringify(input).replace(/"/g, '\\"');
-  const command = `manus-mcp-cli tool call ${toolName} --server notion --input "${inputJson}"`;
+  const inputJson = JSON.stringify(input);
+  // Use full path to manus-mcp-cli and proper PATH
+  const command = `/usr/local/bin/manus-mcp-cli tool call ${toolName} --server notion --input '${inputJson}'`;
   
   try {
-    const { stdout, stderr } = await execAsync(command);
-    if (stderr && !stderr.includes('Tool call completed')) {
-      console.error('Notion MCP stderr:', stderr);
+    const { stdout, stderr } = await execAsync(command, {
+      env: { ...process.env, PATH: '/usr/local/bin:/usr/bin:/bin' }
+    });
+    
+    console.log('Notion MCP stdout:', stdout);
+    if (stderr) {
+      console.log('Notion MCP stderr:', stderr);
     }
     
     // Parse the result from stdout
@@ -31,6 +36,7 @@ async function executeMCP(toolName: string, input: any): Promise<any> {
     return { success: true, output: stdout };
   } catch (error: any) {
     console.error('Notion MCP error:', error);
+    console.error('Command:', command);
     throw new Error(`Notion integration failed: ${error.message}`);
   }
 }

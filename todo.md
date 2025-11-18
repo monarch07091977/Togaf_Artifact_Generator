@@ -134,3 +134,7 @@
 
 ## Bug Fixes
 - [x] Fix project creation error with timestamp fields (notionSyncedAt, canvaSyncedAt)
+
+- [x] Fix Notion export MCP CLI error (command not found)
+- [x] Fix Canva button to show persistent link after design creation
+- [ ] Improve error handling for MCP integrations

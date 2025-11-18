@@ -171,7 +171,7 @@ export default function ProjectDetail() {
                 disabled={createCanvaDeck.isPending}
               >
                 <Presentation className="mr-2 h-4 w-4" />
-                {createCanvaDeck.isPending ? "Creating..." : "Create Presentation"}
+                {createCanvaDeck.isPending ? "Creating..." : "Create in Canva"}
               </Button>
             )}
           </div>
