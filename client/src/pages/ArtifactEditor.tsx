@@ -12,6 +12,8 @@ import { useLocation, useRoute } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Sample questionnaire for artifacts
@@ -50,6 +52,16 @@ export default function ArtifactEditor() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("questionnaire");
   const [answers, setAnswers] = useState<Record<string, string>>({});
+
+  const exportArtifact = trpc.export.artifact.useMutation({
+    onSuccess: (data) => {
+      window.open(data.url, '_blank');
+      toast.success("Export ready! Opening download...");
+    },
+    onError: (error) => {
+      toast.error("Export failed: " + error.message);
+    },
+  });
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: artifact, isLoading, refetch } = trpc.artifacts.get.useQuery(
@@ -70,6 +82,21 @@ export default function ArtifactEditor() {
   const { data: project } = trpc.projects.get.useQuery(
     { id: artifact?.projectId || 0 },
     { enabled: !!artifact }
+  );
+
+  // Get artifact definition ID
+  const artifactDefId = artifact ? Object.keys(TOGAF_ARTIFACTS).find(
+    (key) => TOGAF_ARTIFACTS[key].name === artifact.name
+  ) : undefined;
+
+  const { data: autoPopulatedData } = trpc.questionnaire.getAutoPopulated.useQuery(
+    {
+      artifactId,
+      artifactDefId: artifactDefId || "",
+      phase: artifact?.phase || "",
+      projectId: artifact?.projectId || 0,
+    },
+    { enabled: !!artifact && !!artifactDefId }
   );
 
   const saveResponse = trpc.questionnaire.saveResponse.useMutation();
@@ -93,7 +120,7 @@ export default function ArtifactEditor() {
     },
   });
 
-  // Load existing responses
+  // Load existing responses and auto-populated data
   useEffect(() => {
     if (responses) {
       const answerMap: Record<string, string> = {};
@@ -101,8 +128,17 @@ export default function ArtifactEditor() {
         answerMap[r.questionId] = r.answer || "";
       });
       setAnswers(answerMap);
+    } else if (autoPopulatedData?.data) {
+      // If no user responses, populate with auto-populated data
+      const answerMap: Record<string, string> = {};
+      Object.entries(autoPopulatedData.data).forEach(([key, value]) => {
+        if (!value.isUserProvided) {
+          answerMap[key] = value.value;
+        }
+      });
+      setAnswers(answerMap);
     }
-  }, [responses]);
+  }, [responses, autoPopulatedData]);
 
   const handleSaveAnswer = async (questionId: string, questionText: string, answer: string) => {
     await saveResponse.mutateAsync({
@@ -194,14 +230,35 @@ export default function ArtifactEditor() {
               </Badge>
             </div>
           </div>
-          <Button
-            size="lg"
-            onClick={handleGenerate}
-            disabled={isGenerating || !Object.keys(answers).length}
-          >
-            <Sparkles className="mr-2 h-4 w-4" />
-            {isGenerating ? "Generating..." : "Generate with AI"}
-          </Button>
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={exportArtifact.isPending}>
+                  <Download className="mr-2 h-4 w-4" />
+                  {exportArtifact.isPending ? "Exporting..." : "Export"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => exportArtifact.mutate({ artifactId, format: "markdown" })}>
+                  Export as Markdown
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportArtifact.mutate({ artifactId, format: "pdf" })}>
+                  Export as PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportArtifact.mutate({ artifactId, format: "word" })}>
+                  Export as Word
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              size="lg"
+              onClick={handleGenerate}
+              disabled={isGenerating || !Object.keys(answers).length}
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              {isGenerating ? "Generating..." : "Generate with AI"}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -228,23 +285,41 @@ export default function ArtifactEditor() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {questions.map((question) => (
-                <div key={question.id} className="space-y-2">
-                  <Label htmlFor={question.id}>{question.text}</Label>
-                  <Textarea
-                    id={question.id}
-                    placeholder={question.placeholder}
-                    value={answers[question.id] || ""}
-                    onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
-                    onBlur={() => {
-                      if (answers[question.id]) {
-                        handleSaveAnswer(question.id, question.text, answers[question.id]);
-                      }
-                    }}
-                    rows={4}
-                  />
-                </div>
-              ))}
+              {questions.map((question) => {
+                const autoData = autoPopulatedData?.data[question.id];
+                const hasAutoData = autoData && !autoData.isUserProvided;
+                
+                return (
+                  <div key={question.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={question.id}>{question.text}</Label>
+                      {hasAutoData && (
+                        <Badge variant="secondary" className="text-xs">
+                          Auto-populated from {autoData.source}
+                        </Badge>
+                      )}
+                    </div>
+                    <Textarea
+                      id={question.id}
+                      placeholder={question.placeholder}
+                      value={answers[question.id] || ""}
+                      onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
+                      onBlur={() => {
+                        if (answers[question.id]) {
+                          handleSaveAnswer(question.id, question.text, answers[question.id]);
+                        }
+                      }}
+                      rows={4}
+                      className={hasAutoData ? "border-blue-300 bg-blue-50/50" : ""}
+                    />
+                    {hasAutoData && (
+                      <p className="text-xs text-muted-foreground">
+                        This field was automatically populated. You can edit it to override.
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
 

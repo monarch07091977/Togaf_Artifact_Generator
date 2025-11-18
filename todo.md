@@ -65,3 +65,42 @@
 - [ ] Create checkpoint for deployment
 - [ ] Test deployed application
 - [ ] Create user guide with examples
+
+
+## Enhancement Phase - Auto-Population
+- [x] Implement artifact relationship tracking in database
+- [x] Create auto-population logic to extract data from related artifacts
+- [x] Build UI to show auto-populated fields with source indication
+- [x] Add manual override capability for auto-populated data
+- [x] Implement consistency checking across linked artifacts
+
+## Enhancement Phase - Export Functionality
+- [x] Add Markdown export for all artifacts
+- [x] Implement PDF export using markdown-to-pdf conversion
+- [x] Add Word document export capability
+- [x] Create deliverable bundling (export multiple artifacts together)
+- [ ] Add export templates with organization branding options
+
+## Enhancement Phase - Artifact-Specific Questionnaires
+- [ ] Define detailed questionnaires for all 14 catalog types
+- [ ] Define detailed questionnaires for all 10 matrix types
+- [ ] Define detailed questionnaires for all 32 diagram types
+- [ ] Implement dynamic questionnaire loading based on artifact type
+- [ ] Add validation rules specific to each artifact type
+
+
+## Enhancement Phase - Notion Integration
+- [x] Set up Notion database structure for TOGAF projects
+- [x] Create Notion pages for each ADM phase
+- [x] Implement automatic sync of artifacts to Notion
+- [ ] Build two-way sync for content updates
+- [x] Add Notion export button for each artifact
+- [x] Create hierarchical structure: Project → Phases → Artifacts
+
+## Enhancement Phase - Canva Integration
+- [x] Set up Canva API integration
+- [x] Create Canva templates for TOGAF diagrams
+- [x] Implement automatic design generation for artifacts
+- [x] Add Canva editor integration for customization
+- [x] Build presentation deck generation from multiple artifacts
+- [x] Add export from Canva to application

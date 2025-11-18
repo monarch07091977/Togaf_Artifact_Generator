@@ -203,6 +203,51 @@ export const appRouter = router({
         const { getQuestionnaireResponsesByArtifact } = await import("./db");
         return getQuestionnaireResponsesByArtifact(input.artifactId);
       }),
+    getAutoPopulated: protectedProcedure
+      .input(
+        z.object({
+          artifactId: z.number(),
+          artifactDefId: z.string(),
+          phase: z.string(),
+          projectId: z.number(),
+        })
+      )
+      .query(async ({ input }) => {
+        const { getArtifactsByProjectId, getQuestionnaireResponsesByArtifact } = await import("./db");
+        const { getRelevantSourceArtifacts, extractDataForAutoPopulation, mergeWithUserResponses } = await import("./artifactLinking");
+        
+        // Get all artifacts in the project
+        const allArtifacts = await getArtifactsByProjectId(input.projectId);
+        
+        // Get relevant source artifacts
+        const sourceArtifacts = getRelevantSourceArtifacts(
+          input.artifactDefId,
+          input.phase,
+          allArtifacts
+        );
+        
+        // Get responses for source artifacts
+        const sourceResponses = new Map();
+        for (const artifact of sourceArtifacts) {
+          const responses = await getQuestionnaireResponsesByArtifact(artifact.id);
+          sourceResponses.set(artifact.id, responses);
+        }
+        
+        // Extract auto-populated data
+        const autoPopulated = extractDataForAutoPopulation(
+          input.artifactDefId,
+          sourceArtifacts,
+          sourceResponses
+        );
+        
+        // Get current user responses
+        const userResponses = await getQuestionnaireResponsesByArtifact(input.artifactId);
+        
+        // Merge with user responses
+        const merged = mergeWithUserResponses(autoPopulated, userResponses);
+        
+        return { data: merged, sourceArtifacts: sourceArtifacts.map(a => ({ id: a.id, name: a.name, phase: a.phase })) };
+      }),
     getSuggestions: protectedProcedure
       .input(
         z.object({
@@ -282,6 +327,174 @@ export const appRouter = router({
           projectDescription: input.projectDescription,
         });
         return { answer };
+      }),
+  }),
+
+  export: router({
+    artifact: protectedProcedure
+      .input(
+        z.object({
+          artifactId: z.number(),
+          format: z.enum(["markdown", "pdf", "word"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { getArtifactById, getProjectById } = await import("./db");
+        const { exportToMarkdown, exportToPDF, exportToWord } = await import("./exportService");
+        
+        const artifact = await getArtifactById(input.artifactId);
+        if (!artifact) throw new Error("Artifact not found");
+        
+        const project = await getProjectById(artifact.projectId);
+        if (!project) throw new Error("Project not found");
+        
+        let url: string;
+        if (input.format === "markdown") {
+          const markdown = await exportToMarkdown(artifact, project);
+          const { storagePut } = await import("./storage");
+          const fileName = `${artifact.name.replace(/[^a-zA-Z0-9]/g, '_')}.md`;
+          const result = await storagePut(
+            `exports/${project.id}/${fileName}`,
+            Buffer.from(markdown),
+            'text/markdown'
+          );
+          url = result.url;
+        } else if (input.format === "pdf") {
+          url = await exportToPDF(artifact, project);
+        } else {
+          url = await exportToWord(artifact, project);
+        }
+        
+        return { url };
+      }),
+    deliverable: protectedProcedure
+      .input(
+        z.object({
+          projectId: z.number(),
+          format: z.enum(["markdown", "pdf", "word"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { getProjectById, getArtifactsByProjectId } = await import("./db");
+        const { exportDeliverable } = await import("./exportService");
+        
+        const project = await getProjectById(input.projectId);
+        if (!project) throw new Error("Project not found");
+        
+        const artifacts = await getArtifactsByProjectId(input.projectId);
+        const completedArtifacts = artifacts.filter(a => a.status === "completed" && a.generatedContent);
+        
+        if (completedArtifacts.length === 0) {
+          throw new Error("No completed artifacts to export");
+        }
+        
+        const url = await exportDeliverable(completedArtifacts, project, input.format);
+        return { url };
+      }),
+  }),
+
+  canva: router({
+    createPresentation: protectedProcedure
+      .input(z.object({ artifactId: z.number(), projectName: z.string() }))
+      .mutation(async ({ input }) => {
+        const { getArtifactById } = await import("./db");
+        const { createCanvaPresentation } = await import("./canvaService");
+        
+        const artifact = await getArtifactById(input.artifactId);
+        if (!artifact) throw new Error("Artifact not found");
+        
+        const result = await createCanvaPresentation(artifact, input.projectName);
+        return result;
+      }),
+    createDeck: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getProjectById, getArtifactsByProjectId } = await import("./db");
+        const { createPresentationDeck } = await import("./canvaService");
+        
+        const project = await getProjectById(input.projectId);
+        if (!project) throw new Error("Project not found");
+        
+        const artifacts = await getArtifactsByProjectId(input.projectId);
+        const completedArtifacts = artifacts.filter(a => a.status === "completed" && a.generatedContent);
+        
+        if (completedArtifacts.length === 0) {
+          throw new Error("No completed artifacts to include in deck");
+        }
+        
+        const result = await createPresentationDeck(completedArtifacts, project.name);
+        return result;
+      }),
+    exportDesign: protectedProcedure
+      .input(
+        z.object({
+          designId: z.string(),
+          format: z.enum(["pdf", "pptx", "png", "jpg"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { exportCanvaDesign } = await import("./canvaService");
+        const result = await exportCanvaDesign(input.designId, input.format);
+        return result;
+      }),
+  }),
+
+  notion: router({
+    createProject: protectedProcedure
+      .input(z.object({ projectId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getProjectById } = await import("./db");
+        const { createProjectInNotion } = await import("./notionService");
+        
+        const project = await getProjectById(input.projectId);
+        if (!project) throw new Error("Project not found");
+        
+        const notionUrl = await createProjectInNotion(project);
+        return { notionUrl };
+      }),
+    createArtifact: protectedProcedure
+      .input(
+        z.object({
+          artifactId: z.number(),
+          projectNotionUrl: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { getArtifactById } = await import("./db");
+        const { createArtifactInNotion } = await import("./notionService");
+        
+        const artifact = await getArtifactById(input.artifactId);
+        if (!artifact) throw new Error("Artifact not found");
+        
+        const notionUrl = await createArtifactInNotion(
+          artifact,
+          input.projectNotionUrl
+        );
+        return { notionUrl };
+      }),
+    updateArtifact: protectedProcedure
+      .input(
+        z.object({
+          artifactId: z.number(),
+          notionUrl: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { getArtifactById } = await import("./db");
+        const { updateArtifactInNotion } = await import("./notionService");
+        
+        const artifact = await getArtifactById(input.artifactId);
+        if (!artifact) throw new Error("Artifact not found");
+        
+        await updateArtifactInNotion(input.notionUrl, artifact);
+        return { success: true };
+      }),
+    createDatabase: protectedProcedure
+      .input(z.object({ projectName: z.string() }))
+      .mutation(async ({ input }) => {
+        const { createTOGAFDatabaseInNotion } = await import("./notionService");
+        const databaseUrl = await createTOGAFDatabaseInNotion(input.projectName);
+        return { databaseUrl };
       }),
   }),
 });

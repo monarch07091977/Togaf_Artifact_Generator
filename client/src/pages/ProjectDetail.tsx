@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { TOGAF_ARTIFACTS, getArtifactsByPhase } from "../../../shared/togafArtifacts";
+import { ExternalLink, FileDown, Presentation } from "lucide-react";
 
 export default function ProjectDetail() {
   const [, params] = useRoute("/projects/:id");
@@ -22,6 +23,28 @@ export default function ProjectDetail() {
   const [selectedPhase, setSelectedPhase] = useState<string>(ADM_PHASES[0]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedArtifactDef, setSelectedArtifactDef] = useState<string>("");
+  const [notionUrl, setNotionUrl] = useState<string | null>(null);
+  const [canvaUrl, setCanvaUrl] = useState<string | null>(null);
+
+  const createNotionProject = trpc.notion.createProject.useMutation({
+    onSuccess: (data) => {
+      toast.success("Project exported to Notion!");
+      setNotionUrl(data.notionUrl);
+    },
+    onError: (error) => {
+      toast.error("Failed to export to Notion: " + error.message);
+    },
+  });
+
+  const createCanvaDeck = trpc.canva.createDeck.useMutation({
+    onSuccess: (data) => {
+      toast.success("Presentation deck created in Canva!");
+      setCanvaUrl(data.editUrl);
+    },
+    onError: (error) => {
+      toast.error("Failed to create Canva deck: " + error.message);
+    },
+  });
 
   const { data: project, isLoading: projectLoading } = trpc.projects.get.useQuery(
     { id: projectId },
@@ -98,13 +121,49 @@ export default function ProjectDetail() {
 
       <div className="mb-8">
         <div className="flex items-start justify-between">
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
             <p className="text-muted-foreground mt-2">{project.description}</p>
           </div>
-          <Badge variant={project.status === "completed" ? "default" : "secondary"} className="text-sm">
-            {project.status.replace("_", " ")}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={project.status === "completed" ? "default" : "secondary"} className="text-sm">
+              {project.status.replace("_", " ")}
+            </Badge>
+            {notionUrl ? (
+              <Button variant="outline" asChild>
+                <a href={notionUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View in Notion
+                </a>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => createNotionProject.mutate({ projectId })}
+                disabled={createNotionProject.isPending}
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                {createNotionProject.isPending ? "Exporting..." : "Export to Notion"}
+              </Button>
+            )}
+            {canvaUrl ? (
+              <Button variant="outline" asChild>
+                <a href={canvaUrl} target="_blank" rel="noopener noreferrer">
+                  <Presentation className="mr-2 h-4 w-4" />
+                  Edit in Canva
+                </a>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => createCanvaDeck.mutate({ projectId })}
+                disabled={createCanvaDeck.isPending}
+              >
+                <Presentation className="mr-2 h-4 w-4" />
+                {createCanvaDeck.isPending ? "Creating..." : "Create Presentation"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
