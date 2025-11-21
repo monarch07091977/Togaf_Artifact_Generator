@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, Plus, FileText, Network, BarChart3, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, FileText, Network, BarChart3, Trash2, Pencil } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useLocation, useRoute } from "wouter";
 import { ADM_PHASES } from "../../../shared/togafArtifacts";
@@ -29,6 +29,9 @@ export default function ProjectDetail() {
   const [canvaUrl, setCanvaUrl] = useState<string | null>(null);
   const [deleteArtifactDialogOpen, setDeleteArtifactDialogOpen] = useState(false);
   const [artifactToDelete, setArtifactToDelete] = useState<number | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   const { data: project, isLoading: projectLoading, refetch: refetchProject } = trpc.projects.get.useQuery(
     { id: projectId },
@@ -80,6 +83,17 @@ export default function ProjectDetail() {
     if (!projectId) return;
     toast.info("Canva export coming soon! Use PDF export for now.");
   };
+
+  const updateProject = trpc.projects.update.useMutation({
+    onSuccess: () => {
+      toast.success("Project updated successfully");
+      refetchProject();
+      setEditDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error("Failed to update project: " + error.message);
+    },
+  });
 
   const deleteArtifact = trpc.artifacts.delete.useMutation({
     onSuccess: () => {
@@ -163,6 +177,17 @@ export default function ProjectDetail() {
             <p className="text-muted-foreground mt-2">{project.description}</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setEditName(project.name);
+                setEditDescription(project.description || "");
+                setEditDialogOpen(true);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
             <Badge variant={project.status === "completed" ? "default" : "secondary"} className="text-sm">
               {(project.status || "active").replace("_", " ")}
             </Badge>
@@ -397,6 +422,59 @@ export default function ProjectDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+            <DialogDescription>
+              Update your project name and description
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Project Name *</Label>
+              <input
+                id="edit-name"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <textarea
+                id="edit-description"
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                if (!editName.trim()) {
+                  toast.error("Project name is required");
+                  return;
+                }
+                updateProject.mutate({
+                  id: projectId,
+                  name: editName,
+                  description: editDescription,
+                });
+              }}
+              disabled={updateProject.isPending}
+            >
+              {updateProject.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

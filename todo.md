@@ -171,3 +171,11 @@
 - [x] Fix missing delete button on Projects page (was hidden, now shows on hover)
 - [x] Fix missing delete button on artifact cards in ProjectDetail page (added group class)
 - [x] Ensure delete buttons are visible and functional
+
+
+## Edit Project Metadata
+- [x] Verify update project backend procedure exists
+- [x] Add edit button to project detail page header
+- [x] Create edit project dialog with name and description fields
+- [x] Implement save functionality with validation
+- [ ] Test edit project functionality
