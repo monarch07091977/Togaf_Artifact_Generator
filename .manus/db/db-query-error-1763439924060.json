@@ -1,0 +1,8 @@
+{
+  "query": "UPDATE projects SET status = 'active' WHERE status IN ('draft', 'in_progress')",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user MCXikgkEWzjEGDB.4f9baeb9deaf --database fq5wr6YzXYEsLcWqw7mDwv --execute UPDATE projects SET status = 'active' WHERE status IN ('draft', 'in_progress')",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1265 (01000) at line 1: Data truncated for column '%s' at row %d"
+  ]
+}
