@@ -1,7 +1,5 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
+import { APP_LOGO, APP_TITLE } from "@/const";
 import { useLocation } from "wouter";
 
 /**
@@ -9,16 +7,7 @@ import { useLocation } from "wouter";
  * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
  */
 export default function Home() {
-  const { user, loading, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -30,16 +19,7 @@ export default function Home() {
             <h1 className="text-xl font-bold">{APP_TITLE}</h1>
           </div>
           <div className="flex items-center gap-4">
-            {isAuthenticated ? (
-              <>
-                <span className="text-sm text-muted-foreground">Welcome, {user?.name}</span>
-                <Button onClick={() => setLocation("/projects")}>My Projects</Button>
-              </>
-            ) : (
-              <Button asChild>
-                <a href={getLoginUrl()}>Sign In</a>
-              </Button>
-            )}
+            <Button onClick={() => setLocation("/projects")}>My Projects</Button>
           </div>
         </div>
       </header>
@@ -55,15 +35,9 @@ export default function Home() {
               Automate your enterprise architecture documentation with AI-powered artifact generation following TOGAF 10 ADM methodology
             </p>
             <div className="flex gap-4 justify-center">
-              {isAuthenticated ? (
-                <Button size="lg" onClick={() => setLocation("/projects")}>
-                  Go to Projects
-                </Button>
-              ) : (
-                <Button size="lg" asChild>
-                  <a href={getLoginUrl()}>Get Started</a>
-                </Button>
-              )}
+              <Button size="lg" onClick={() => setLocation("/projects")}>
+                Get Started
+              </Button>
             </div>
           </div>
         </section>

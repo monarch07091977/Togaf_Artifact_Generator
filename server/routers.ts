@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -19,11 +19,13 @@ export const appRouter = router({
   }),
 
   projects: router({
-    list: protectedProcedure.query(async ({ ctx }) => {
+    list: publicProcedure.query(async ({ ctx }) => {
       const { getProjectsByUserId } = await import("./db");
-      return getProjectsByUserId(ctx.user.id);
+      // Use a default user ID of 1 when no authentication
+      const userId = ctx.user?.id || 1;
+      return getProjectsByUserId(userId);
     }),
-    create: protectedProcedure
+    create: publicProcedure
       .input(
         z.object({
           name: z.string().min(1),
@@ -33,7 +35,7 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const { createProject } = await import("./db");
         const projectId = await createProject({
-          userId: ctx.user.id,
+          userId: ctx.user?.id || 1,
           name: input.name,
           description: input.description,
           currentPhase: "Preliminary",
@@ -41,13 +43,13 @@ export const appRouter = router({
         });
         return { id: projectId };
       }),
-    get: protectedProcedure
+    get: publicProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
         const { getProjectById } = await import("./db");
         return getProjectById(input.id);
       }),
-    update: protectedProcedure
+    update: publicProcedure
       .input(
         z.object({
           id: z.number(),
@@ -63,7 +65,7 @@ export const appRouter = router({
         await updateProject(id, data);
         return { success: true };
       }),
-    delete: protectedProcedure
+    delete: publicProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         const { deleteProject } = await import("./db");
@@ -73,13 +75,13 @@ export const appRouter = router({
   }),
 
   artifacts: router({
-    listByProject: protectedProcedure
+    listByProject: publicProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ input }) => {
         const { getArtifactsByProjectId } = await import("./db");
         return getArtifactsByProjectId(input.projectId);
       }),
-    listByPhase: protectedProcedure
+    listByPhase: publicProcedure
       .input(
         z.object({
           projectId: z.number(),
@@ -90,7 +92,7 @@ export const appRouter = router({
         const { getArtifactsByPhase } = await import("./db");
         return getArtifactsByPhase(input.projectId, input.phase);
       }),
-    create: protectedProcedure
+    create: publicProcedure
       .input(
         z.object({
           projectId: z.number(),
@@ -107,13 +109,13 @@ export const appRouter = router({
         });
         return { id: artifactId };
       }),
-    get: protectedProcedure
+    get: publicProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
         const { getArtifactById } = await import("./db");
         return getArtifactById(input.id);
       }),
-    update: protectedProcedure
+    update: publicProcedure
       .input(
         z.object({
           id: z.number(),
@@ -128,14 +130,14 @@ export const appRouter = router({
         await updateArtifact(id, data);
         return { success: true };
       }),
-    delete: protectedProcedure
+    delete: publicProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         const { deleteArtifact } = await import("./db");
         await deleteArtifact(input.id);
         return { success: true };
       }),
-    generate: protectedProcedure
+    generate: publicProcedure
       .input(
         z.object({
           artifactId: z.number(),
@@ -189,7 +191,7 @@ export const appRouter = router({
   }),
 
   questionnaire: router({
-    saveResponse: protectedProcedure
+    saveResponse: publicProcedure
       .input(
         z.object({
           artifactId: z.number(),
@@ -204,13 +206,13 @@ export const appRouter = router({
         const responseId = await saveQuestionnaireResponse(input);
         return { id: responseId };
       }),
-    getResponses: protectedProcedure
+    getResponses: publicProcedure
       .input(z.object({ artifactId: z.number() }))
       .query(async ({ input }) => {
         const { getQuestionnaireResponsesByArtifact } = await import("./db");
         return getQuestionnaireResponsesByArtifact(input.artifactId);
       }),
-    getAutoPopulated: protectedProcedure
+    getAutoPopulated: publicProcedure
       .input(
         z.object({
           artifactId: z.number(),
@@ -255,7 +257,7 @@ export const appRouter = router({
         
         return { data: merged, sourceArtifacts: sourceArtifacts.map(a => ({ id: a.id, name: a.name, phase: a.phase })) };
       }),
-    getSuggestions: protectedProcedure
+    getSuggestions: publicProcedure
       .input(
         z.object({
           question: z.string(),
@@ -274,13 +276,13 @@ export const appRouter = router({
   }),
 
   assumptions: router({
-    listByArtifact: protectedProcedure
+    listByArtifact: publicProcedure
       .input(z.object({ artifactId: z.number() }))
       .query(async ({ input }) => {
         const { getAssumptionsByArtifact } = await import("./db");
         return getAssumptionsByArtifact(input.artifactId);
       }),
-    create: protectedProcedure
+    create: publicProcedure
       .input(
         z.object({
           artifactId: z.number(),
@@ -298,7 +300,7 @@ export const appRouter = router({
         });
         return { id: assumptionId };
       }),
-    update: protectedProcedure
+    update: publicProcedure
       .input(
         z.object({
           id: z.number(),
@@ -317,7 +319,7 @@ export const appRouter = router({
   }),
 
   expertise: router({
-    ask: protectedProcedure
+    ask: publicProcedure
       .input(
         z.object({
           question: z.string(),
@@ -338,7 +340,7 @@ export const appRouter = router({
   }),
 
   export: router({
-    artifact: protectedProcedure
+    artifact: publicProcedure
       .input(
         z.object({
           artifactId: z.number(),
@@ -374,7 +376,7 @@ export const appRouter = router({
         
         return { url };
       }),
-    deliverable: protectedProcedure
+    deliverable: publicProcedure
       .input(
         z.object({
           projectId: z.number(),
@@ -401,7 +403,7 @@ export const appRouter = router({
   }),
 
   canva: router({
-    createPresentation: protectedProcedure
+    createPresentation: publicProcedure
       .input(z.object({ projectId: z.number() }))
       .mutation(async ({ input, ctx }) => {
         const { getProjectById, updateProject, getArtifactsByProjectId } = await import("./db");
@@ -427,7 +429,7 @@ export const appRouter = router({
         
         return { canvaUrl: canvaResult.editUrl };
       }),
-    createDeck: protectedProcedure
+    createDeck: publicProcedure
       .input(z.object({ projectId: z.number() }))
       .mutation(async ({ input }) => {
         const { getProjectById, getArtifactsByProjectId } = await import("./db");
@@ -446,7 +448,7 @@ export const appRouter = router({
         const result = await createPresentationDeck(completedArtifacts, project.name);
         return result;
       }),
-    exportDesign: protectedProcedure
+    exportDesign: publicProcedure
       .input(
         z.object({
           designId: z.string(),
@@ -461,7 +463,7 @@ export const appRouter = router({
   }),
 
   notion: router({  
-    exportProject: protectedProcedure
+    exportProject: publicProcedure
       .input(z.object({ projectId: z.number() }))
       .query(async ({ input, ctx }) => {
         const { getProjectById, getArtifactsByProjectId } = await import("./db");
@@ -501,7 +503,7 @@ export const appRouter = router({
         
         return { markdown, projectName: project.name };
       }),
-    createArtifact: protectedProcedure
+    createArtifact: publicProcedure
       .input(
         z.object({
           artifactId: z.number(),
@@ -521,7 +523,7 @@ export const appRouter = router({
         );
         return { notionUrl };
       }),
-    updateArtifact: protectedProcedure
+    updateArtifact: publicProcedure
       .input(
         z.object({
           artifactId: z.number(),
@@ -538,7 +540,7 @@ export const appRouter = router({
         await updateArtifactInNotion(input.notionUrl, artifact);
         return { success: true };
       }),
-    createDatabase: protectedProcedure
+    createDatabase: publicProcedure
       .input(z.object({ projectName: z.string() }))
       .mutation(async ({ input }) => {
         const { createTOGAFDatabaseInNotion } = await import("./notionService");
