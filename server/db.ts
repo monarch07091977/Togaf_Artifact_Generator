@@ -70,7 +70,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -98,8 +99,8 @@ import { desc, and } from "drizzle-orm";
 export async function createProject(data: Omit<InsertProject, "id" | "createdAt" | "updatedAt">) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(projects).values(data);
-  return Number(result[0].insertId);
+  const result = await db.insert(projects).values(data).returning({ id: projects.id });
+  return result[0].id;
 }
 
 export async function getProjectsByUserId(userId: number): Promise<Project[]> {
@@ -131,8 +132,8 @@ export async function deleteProject(id: number) {
 export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdAt" | "updatedAt">) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(artifacts).values(data);
-  return Number(result[0].insertId);
+  const result = await db.insert(artifacts).values(data).returning({ id: artifacts.id });
+  return result[0].id;
 }
 
 export async function getArtifactsByProjectId(projectId: number): Promise<Artifact[]> {
@@ -170,8 +171,8 @@ export async function deleteArtifact(id: number) {
 export async function createArtifactRelationship(data: Omit<InsertArtifactRelationship, "id" | "createdAt">) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(artifactRelationships).values(data);
-  return Number(result[0].insertId);
+  const result = await db.insert(artifactRelationships).values(data).returning({ id: artifactRelationships.id });
+  return result[0].id;
 }
 
 export async function getArtifactDependencies(artifactId: number): Promise<ArtifactRelationship[]> {
@@ -190,8 +191,8 @@ export async function getArtifactDependents(artifactId: number): Promise<Artifac
 export async function saveQuestionnaireResponse(data: Omit<InsertQuestionnaireResponse, "id" | "createdAt" | "updatedAt">) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(questionnaireResponses).values(data);
-  return Number(result[0].insertId);
+  const result = await db.insert(questionnaireResponses).values(data).returning({ id: questionnaireResponses.id });
+  return result[0].id;
 }
 
 export async function getQuestionnaireResponsesByArtifact(artifactId: number): Promise<QuestionnaireResponse[]> {
@@ -210,8 +211,8 @@ export async function updateQuestionnaireResponse(id: number, data: Partial<Omit
 export async function createAssumption(data: Omit<InsertAssumption, "id" | "createdAt" | "updatedAt">) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(assumptions).values(data);
-  return Number(result[0].insertId);
+  const result = await db.insert(assumptions).values(data).returning({ id: assumptions.id });
+  return result[0].id;
 }
 
 export async function getAssumptionsByArtifact(artifactId: number): Promise<Assumption[]> {
@@ -230,8 +231,8 @@ export async function updateAssumption(id: number, data: Partial<Omit<InsertAssu
 export async function createDeliverable(data: Omit<InsertDeliverable, "id" | "createdAt" | "updatedAt">) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(deliverables).values(data);
-  return Number(result[0].insertId);
+  const result = await db.insert(deliverables).values(data).returning({ id: deliverables.id });
+  return result[0].id;
 }
 
 export async function getDeliverablesByProject(projectId: number): Promise<Deliverable[]> {
