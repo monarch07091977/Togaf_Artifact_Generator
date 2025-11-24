@@ -16,7 +16,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path="/projects" component={Projects} />
       <Route path="/projects/:id" component={ProjectDetail} />
-      <Route path="/artifacts/:id" component={ArtifactEditor} />
+      <Route path="/projects/:projectId/artifacts/:artifactId" component={ArtifactEditor} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

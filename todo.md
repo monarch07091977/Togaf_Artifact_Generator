@@ -178,4 +178,11 @@
 - [x] Add edit button to project detail page header
 - [x] Create edit project dialog with name and description fields
 - [x] Implement save functionality with validation
-- [ ] Test edit project functionality
+- [x] Test edit project functionality
+
+## Fix tRPC Errors (Artifact Page)
+- [x] Investigate server logs for errors when accessing artifact ID 30002
+- [x] Identify which tRPC procedures are failing
+- [x] Fix routing configuration - artifact route was /artifacts/:id but URL was /projects/:projectId/artifacts/:artifactId
+- [x] Test artifact page loads correctly
+- [x] Verify all API calls return proper JSON

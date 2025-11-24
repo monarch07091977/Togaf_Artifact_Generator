@@ -113,7 +113,7 @@ export default function ProjectDetail() {
       setCreateDialogOpen(false);
       setSelectedArtifactDef("");
       refetchArtifacts();
-      setLocation(`/artifacts/${data.id}`);
+      setLocation(`/projects/${projectId}/artifacts/${data.id}`);
     },
     onError: (error) => {
       toast.error("Failed to create artifact: " + error.message);
@@ -346,7 +346,7 @@ export default function ProjectDetail() {
                       <Card
                         key={artifact.id}
                         className="hover:shadow-md transition-shadow cursor-pointer group"
-                        onClick={() => setLocation(`/artifacts/${artifact.id}`)}
+                        onClick={() => setLocation(`/projects/${projectId}/artifacts/${artifact.id}`)}
                       >
                         <CardHeader>
                           <div className="flex items-start justify-between gap-2">

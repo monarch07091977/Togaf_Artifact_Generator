@@ -56,8 +56,8 @@ const getQuestionnaireForArtifact = (artifactName: string) => {
 };
 
 export default function ArtifactEditor() {
-  const [, params] = useRoute("/artifacts/:id");
-  const artifactId = params?.id ? parseInt(params.id) : 0;
+  const [, params] = useRoute("/projects/:projectId/artifacts/:artifactId");
+  const artifactId = params?.artifactId ? parseInt(params.artifactId) : 0;
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("guidance");

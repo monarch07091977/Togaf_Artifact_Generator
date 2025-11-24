@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, name, type, projectId, status FROM artifacts ORDER BY id DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user MCXikgkEWzjEGDB.4f9baeb9deaf --database fq5wr6YzXYEsLcWqw7mDwv --execute SELECT id, name, type, projectId, status FROM artifacts ORDER BY id DESC LIMIT 10",
+  "rows": [
+    {
+      "id": "90002",
+      "name": "Organization/Actor Catalog",
+      "type": "catalog",
+      "projectId": "1",
+      "status": "completed"
+    },
+    {
+      "id": "90001",
+      "name": "Driver/Goal/Objective Catalog",
+      "type": "catalog",
+      "projectId": "1",
+      "status": "completed"
+    },
+    {
+      "id": "60001",
+      "name": "Stakeholder Map Matrix",
+      "type": "matrix",
+      "projectId": "1",
+      "status": "not_started"
+    },
+    {
+      "id": "30002",
+      "name": "Solution Concept Diagram",
+      "type": "diagram",
+      "projectId": "1",
+      "status": "not_started"
+    },
+    {
+      "id": "2",
+      "name": "Principles Catalog",
+      "type": "catalog",
+      "projectId": "1",
+      "status": "completed"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttype\tprojectId\tstatus\n90002\tOrganization/Actor Catalog\tcatalog\t1\tcompleted\n90001\tDriver/Goal/Objective Catalog\tcatalog\t1\tcompleted\n60001\tStakeholder Map Matrix\tmatrix\t1\tnot_started\n30002\tSolution Concept Diagram\tdiagram\t1\tnot_started\n2\tPrinciples Catalog\tcatalog\t1\tcompleted\n",
+  "stderr": "",
+  "execution_time_ms": 2748
+}
