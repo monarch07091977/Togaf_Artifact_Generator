@@ -3,6 +3,11 @@ import { promisify } from "util";
 import { writeFile, readFile } from "fs/promises";
 import { marked } from "marked";
 import puppeteer from "puppeteer";
+import { homedir } from "os";
+import { join } from "path";
+
+// Set puppeteer cache directory
+process.env.PUPPETEER_CACHE_DIR = join(homedir(), '.cache', 'puppeteer');
 import { Artifact, Project } from "../drizzle/schema";
 import { storagePut } from "./storage";
 
@@ -66,9 +71,13 @@ export async function exportToPDF(artifact: Artifact, project: Project | null): 
   const html = marked(markdown);
   
   // Generate PDF using puppeteer
+  // Find Chrome executable
+  const chromeExecutable = join(homedir(), '.cache', 'puppeteer', 'chrome', 'linux-142.0.7444.175', 'chrome-linux64', 'chrome');
+  
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    executablePath: chromeExecutable
   });
   
   try {

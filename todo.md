@@ -218,3 +218,8 @@
 - [x] Install and configure puppeteer for PDF generation
 - [x] Update export service to use Node.js-based PDF generation with puppeteer
 - [x] Test PDF generation works in all environments - Successfully tested with puppeteer
+
+## Fix Chromium Cache Path for Deployed Environment
+- [x] Configure puppeteer to use correct cache directory (/home/ubuntu/.cache/puppeteer instead of /root/.cache/puppeteer)
+- [x] Set PUPPETEER_CACHE_DIR environment variable
+- [ ] Test PDF export works in deployed environment
