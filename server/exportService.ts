@@ -1,6 +1,6 @@
 import { exec } from "child_process";
 import { promisify } from "util";
-import { writeFile } from "fs/promises";
+import { writeFile, readFile } from "fs/promises";
 import { Artifact, Project } from "../drizzle/schema";
 import { storagePut } from "./storage";
 
@@ -56,10 +56,10 @@ export async function exportToPDF(artifact: Artifact, project: Project): Promise
   await writeFile(tempMdPath, markdown);
   
   // Convert to PDF using manus-md-to-pdf utility
-  await execAsync(`manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
+  await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
   
   // Upload to S3
-  const pdfBuffer = await require('fs/promises').readFile(tempPdfPath);
+  const pdfBuffer = await readFile(tempPdfPath);
   const fileName = `${artifact.name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
   const { url } = await storagePut(
     `exports/${project.id}/${fileName}`,
@@ -96,7 +96,7 @@ export async function exportToWord(artifact: Artifact, project: Project): Promis
   }
   
   // Upload to S3
-  const docxBuffer = await require('fs/promises').readFile(tempDocxPath);
+  const docxBuffer = await readFile(tempDocxPath);
   const fileName = `${artifact.name.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
   const { url } = await storagePut(
     `exports/${project.id}/${fileName}`,
@@ -175,9 +175,9 @@ ${combinedContent}
 
   if (format === 'pdf') {
     const tempPdfPath = `/tmp/deliverable-${project.id}-${Date.now()}.pdf`;
-    await execAsync(`manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
+    await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
     
-    const pdfBuffer = await require('fs/promises').readFile(tempPdfPath);
+    const pdfBuffer = await readFile(tempPdfPath);
     const fileName = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Deliverable.pdf`;
     const { url } = await storagePut(
       `exports/${project.id}/${fileName}`,
@@ -195,7 +195,7 @@ ${combinedContent}
     try {
       await execAsync(`pandoc ${tempMdPath} -o ${tempDocxPath}`);
       
-      const docxBuffer = await require('fs/promises').readFile(tempDocxPath);
+      const docxBuffer = await readFile(tempDocxPath);
       const fileName = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Deliverable.docx`;
       const { url } = await storagePut(
         `exports/${project.id}/${fileName}`,
@@ -212,9 +212,9 @@ ${combinedContent}
       
       const tempPdfPath = `/tmp/deliverable-${project.id}-${Date.now()}.pdf`;
       await writeFile(tempMdPath, markdown);
-      await execAsync(`manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
+      await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
       
-      const pdfBuffer = await require('fs/promises').readFile(tempPdfPath);
+      const pdfBuffer = await readFile(tempPdfPath);
       const fileName = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Deliverable.pdf`;
       const { url } = await storagePut(
         `exports/${project.id}/${fileName}`,

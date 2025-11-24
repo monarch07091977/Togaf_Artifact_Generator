@@ -199,3 +199,10 @@
 - [x] Exclude already-created artifacts from the dropdown
 - [x] Update UI to show "All artifacts created" message when phase is complete
 - [x] Test dropdown filtering works correctly across all phases
+
+## Fix Artifact Export Functionality
+- [x] Investigate why manus-md-to-pdf command is not found
+- [x] Fix PDF export functionality
+- [x] Fix Word export functionality
+- [x] Test PDF export downloads correctly
+- [x] Test Word export downloads correctly
