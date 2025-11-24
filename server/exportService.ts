@@ -56,7 +56,9 @@ export async function exportToPDF(artifact: Artifact, project: Project): Promise
   await writeFile(tempMdPath, markdown);
   
   // Convert to PDF using manus-md-to-pdf utility
-  await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
+  await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`, {
+    env: { ...process.env, PATH: `/usr/local/bin:${process.env.PATH}` }
+  });
   
   // Upload to S3
   const pdfBuffer = await readFile(tempPdfPath);
@@ -175,7 +177,9 @@ ${combinedContent}
 
   if (format === 'pdf') {
     const tempPdfPath = `/tmp/deliverable-${project.id}-${Date.now()}.pdf`;
-    await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
+    await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`, {
+      env: { ...process.env, PATH: `/usr/local/bin:${process.env.PATH}` }
+    });
     
     const pdfBuffer = await readFile(tempPdfPath);
     const fileName = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Deliverable.pdf`;
@@ -212,7 +216,9 @@ ${combinedContent}
       
       const tempPdfPath = `/tmp/deliverable-${project.id}-${Date.now()}.pdf`;
       await writeFile(tempMdPath, markdown);
-      await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`);
+      await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`, {
+        env: { ...process.env, PATH: `/usr/local/bin:${process.env.PATH}` }
+      });
       
       const pdfBuffer = await readFile(tempPdfPath);
       const fileName = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Deliverable.pdf`;

@@ -206,3 +206,9 @@
 - [x] Fix Word export functionality
 - [x] Test PDF export downloads correctly
 - [x] Test Word export downloads correctly
+
+## Fix Persistent PDF Export Error
+- [x] Investigate why manus-md-to-pdf is not found in production environment
+- [x] Check if utility exists and is accessible
+- [x] Implement fallback PDF generation using alternative method - added PATH environment to execAsync
+- [x] Test PDF export works reliably
