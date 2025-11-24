@@ -186,3 +186,16 @@
 - [x] Fix routing configuration - artifact route was /artifacts/:id but URL was /projects/:projectId/artifacts/:artifactId
 - [x] Test artifact page loads correctly
 - [x] Verify all API calls return proper JSON
+
+## TOGAF-Based Questionnaire Improvements
+- [x] Review TOGAF standard documentation (Parts 0-5) for artifact requirements
+- [x] Extract artifact-specific questions from TOGAF documentation
+- [x] Update questionnaire system to use TOGAF-based questions for each artifact type
+- [x] Create mapping between artifact types and their specific questionnaire templates
+- [x] Test questionnaires generate relevant content for artifacts
+
+## Artifact Dropdown Filtering
+- [x] Filter artifact dropdown to show only artifacts for the selected ADM phase
+- [x] Exclude already-created artifacts from the dropdown
+- [x] Update UI to show "All artifacts created" message when phase is complete
+- [x] Test dropdown filtering works correctly across all phases

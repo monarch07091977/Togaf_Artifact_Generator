@@ -18,42 +18,30 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-// Sample questionnaire for artifacts
-const getQuestionnaireForArtifact = (artifactName: string) => {
-  // This would be expanded with specific questions for each artifact type
-  const baseQuestions = [
-    {
-      id: "scope",
-      text: "What is the scope of this artifact?",
-      placeholder: "Describe the boundaries and coverage...",
-      context: "Defining scope helps establish clear boundaries for what this artifact covers and what it doesn't. This prevents scope creep and ensures focused, actionable content.",
-      example: "Example: For a Principles Catalog, scope might be 'Enterprise-wide architecture principles applicable to all IT initiatives across the organization, excluding project-specific guidelines.'"
-    },
-    {
-      id: "stakeholders",
-      text: "Who are the key stakeholders?",
-      placeholder: "List primary stakeholders and their roles...",
-      context: "Identifying stakeholders ensures the artifact addresses the right audience's concerns and gets proper review. Different stakeholders have different needs and perspectives.",
-      example: "Example: CIO (decision authority), Enterprise Architects (content owners), Project Managers (consumers), Business Unit Leaders (reviewers)"
-    },
-    {
-      id: "objectives",
-      text: "What are the main objectives?",
-      placeholder: "Define the goals and expected outcomes...",
-      context: "Clear objectives help measure success and guide content creation. They ensure the artifact delivers value and supports business goals.",
-      example: "Example: 1) Establish consistent decision-making framework, 2) Reduce technology fragmentation, 3) Enable faster solution delivery, 4) Ensure regulatory compliance"
-    },
-    {
-      id: "constraints",
-      text: "What constraints or limitations exist?",
-      placeholder: "Describe technical, business, or regulatory constraints...",
-      context: "Understanding constraints helps create realistic, achievable architecture. Constraints shape what's possible and guide trade-off decisions.",
-      example: "Example: Budget limit of $2M, must complete within 6 months, must comply with GDPR and SOX, legacy systems cannot be replaced until 2026"
-    },
-  ];
-
-  return baseQuestions;
-};
+// Fallback questions if API call fails
+const getFallbackQuestions = () => [
+  {
+    id: "scope",
+    text: "What is the scope of this artifact?",
+    placeholder: "Describe the boundaries and coverage...",
+    context: "Defining scope helps establish clear boundaries for what this artifact covers and what it doesn't.",
+    example: "Example: Enterprise-wide principles applicable to all IT initiatives."
+  },
+  {
+    id: "stakeholders",
+    text: "Who are the key stakeholders?",
+    placeholder: "List primary stakeholders and their roles...",
+    context: "Identifying stakeholders ensures the artifact addresses the right audience's concerns.",
+    example: "Example: CIO, Enterprise Architects, Project Managers, Business Unit Leaders"
+  },
+  {
+    id: "objectives",
+    text: "What are the main objectives?",
+    placeholder: "Define the goals and expected outcomes...",
+    context: "Clear objectives help measure success and guide content creation.",
+    example: "Example: Establish consistent decision-making framework, reduce technology fragmentation"
+  },
+];
 
 export default function ArtifactEditor() {
   const [, params] = useRoute("/projects/:projectId/artifacts/:artifactId");
@@ -114,6 +102,18 @@ export default function ArtifactEditor() {
     { enabled: !!artifact && !!artifactDefId }
   );
 
+  // Generate TOGAF-specific questionnaire
+  const { data: generatedQuestions, isLoading: questionsLoading } = trpc.questionnaire.generateQuestions.useQuery(
+    {
+      artifactDefId: artifactDefId || "",
+      projectDescription: project?.description || undefined,
+    },
+    { enabled: !!artifactDefId && !!project, staleTime: Infinity } // Cache questionnaire
+  );
+
+  // Use generated questions or fallback
+  const questions = generatedQuestions || getFallbackQuestions();
+
   const saveResponse = trpc.questionnaire.saveResponse.useMutation();
   const updateArtifact = trpc.artifacts.update.useMutation({
     onSuccess: () => {
@@ -169,7 +169,6 @@ export default function ArtifactEditor() {
     if (!artifact || !project) return;
 
     // Save all current answers first
-    const questions = getQuestionnaireForArtifact(artifact.name);
     for (const q of questions) {
       if (answers[q.id]) {
         await handleSaveAnswer(q.id, q.text, answers[q.id]);
@@ -218,8 +217,6 @@ export default function ArtifactEditor() {
       </div>
     );
   }
-
-  const questions = getQuestionnaireForArtifact(artifact.name);
 
   return (
     <div className="container py-8">

@@ -189,6 +189,17 @@ export const appRouter = router({
   }),
 
   questionnaire: router({
+    generateQuestions: protectedProcedure
+      .input(
+        z.object({
+          artifactDefId: z.string(),
+          projectDescription: z.string().optional(),
+        })
+      )
+      .query(async ({ input }) => {
+        const { generateTogafQuestionnaire } = await import("./questionnaireGenerator");
+        return generateTogafQuestionnaire(input.artifactDefId, input.projectDescription);
+      }),
     saveResponse: protectedProcedure
       .input(
         z.object({

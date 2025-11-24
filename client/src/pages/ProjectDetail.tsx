@@ -159,7 +159,10 @@ export default function ProjectDetail() {
   }
 
   const phaseArtifacts = artifacts?.filter((a) => a.phase === selectedPhase) || [];
-  const availableArtifacts = getArtifactsByPhase(selectedPhase as any);
+  // Get all artifacts for the phase, then filter out ones that are already created
+  const allPhaseArtifacts = getArtifactsByPhase(selectedPhase as any);
+  const createdArtifactTypes = new Set(phaseArtifacts.map(a => a.type));
+  const availableArtifacts = allPhaseArtifacts.filter(artifact => !createdArtifactTypes.has(artifact.id));
 
   return (
     <div className="container py-8">
@@ -272,25 +275,31 @@ export default function ProjectDetail() {
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="artifact-type">Artifact Type</Label>
-                          <Select value={selectedArtifactDef} onValueChange={setSelectedArtifactDef}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select artifact type..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableArtifacts.map((artifact) => (
-                                <SelectItem key={artifact.id} value={artifact.id}>
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-xs">
-                                      {artifact.type}
-                                    </Badge>
-                                    {artifact.name}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        {availableArtifacts.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <p className="font-medium mb-2">All artifacts created for this phase</p>
+                            <p className="text-sm">You've created all available artifacts for {selectedPhase}.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <Label htmlFor="artifact-type">Artifact Type ({availableArtifacts.length} available)</Label>
+                            <Select value={selectedArtifactDef} onValueChange={setSelectedArtifactDef}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select artifact type..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {availableArtifacts.map((artifact) => (
+                                  <SelectItem key={artifact.id} value={artifact.id}>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline" className="text-xs">
+                                        {artifact.type}
+                                      </Badge>
+                                      {artifact.name}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           {selectedArtifact && (
                             <Card className="bg-muted/50 mt-3">
                               <CardHeader className="pb-3">
@@ -320,6 +329,7 @@ export default function ProjectDetail() {
                             </Card>
                           )}
                         </div>
+                        )}
                       </div>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
