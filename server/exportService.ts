@@ -1,6 +1,8 @@
 import { exec } from "child_process";
 import { promisify } from "util";
 import { writeFile, readFile } from "fs/promises";
+import { marked } from "marked";
+import puppeteer from "puppeteer";
 import { Artifact, Project } from "../drizzle/schema";
 import { storagePut } from "./storage";
 
@@ -45,9 +47,14 @@ ${content}
 /**
  * Export artifact to PDF format
  */
-export async function exportToPDF(artifact: Artifact, project: Project): Promise<string> {
-  // First generate markdown
-  const markdown = await exportToMarkdown(artifact, project);
+export async function exportToPDF(artifact: Artifact, project: Project | null): Promise<string> {
+  if (!project) throw new Error('Project not found');
+  
+  try {
+    console.log('[exportToPDF] Starting PDF generation for artifact:', artifact.id);
+    
+    // First generate markdown
+    const markdown = await exportToMarkdown(artifact, project);
   
   // Save markdown to temp file
   const tempMdPath = `/tmp/artifact-${artifact.id}-${Date.now()}.md`;
@@ -55,10 +62,47 @@ export async function exportToPDF(artifact: Artifact, project: Project): Promise
   
   await writeFile(tempMdPath, markdown);
   
-  // Convert to PDF using manus-md-to-pdf utility
-  await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`, {
-    env: { ...process.env, PATH: `/usr/local/bin:${process.env.PATH}` }
+  // Convert markdown to HTML
+  const html = marked(markdown);
+  
+  // Generate PDF using puppeteer
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
+  
+  try {
+    const page = await browser.newPage();
+    await page.setContent(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; }
+            h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+            h2 { color: #555; margin-top: 30px; }
+            h3 { color: #777; }
+            table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>${html}</body>
+      </html>
+    `, { waitUntil: 'networkidle0' });
+    
+    await page.pdf({
+      path: tempPdfPath,
+      format: 'A4',
+      margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
+      printBackground: true
+    });
+  } finally {
+    await browser.close();
+  }
+  
+  console.log('[exportToPDF] PDF generated successfully, uploading to S3');
   
   // Upload to S3
   const pdfBuffer = await readFile(tempPdfPath);
@@ -72,7 +116,12 @@ export async function exportToPDF(artifact: Artifact, project: Project): Promise
   // Clean up temp files
   await execAsync(`rm ${tempMdPath} ${tempPdfPath}`);
   
+  console.log('[exportToPDF] Upload complete, URL:', url);
   return url;
+  } catch (error) {
+    console.error('[exportToPDF] Error:', error);
+    throw error;
+  }
 }
 
 /**
@@ -177,9 +226,46 @@ ${combinedContent}
 
   if (format === 'pdf') {
     const tempPdfPath = `/tmp/deliverable-${project.id}-${Date.now()}.pdf`;
-    await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`, {
-      env: { ...process.env, PATH: `/usr/local/bin:${process.env.PATH}` }
+    
+    // Convert markdown to HTML
+    const html = marked(markdown);
+    
+    // Generate PDF using puppeteer
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
+    
+    try {
+      const page = await browser.newPage();
+      await page.setContent(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; }
+              h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+              h2 { color: #555; margin-top: 30px; }
+              h3 { color: #777; }
+              table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+            </style>
+          </head>
+          <body>${html}</body>
+        </html>
+      `, { waitUntil: 'networkidle0' });
+      
+      await page.pdf({
+        path: tempPdfPath,
+        format: 'A4',
+        margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
+        printBackground: true
+      });
+    } finally {
+      await browser.close();
+    }
     
     const pdfBuffer = await readFile(tempPdfPath);
     const fileName = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Deliverable.pdf`;
@@ -216,9 +302,46 @@ ${combinedContent}
       
       const tempPdfPath = `/tmp/deliverable-${project.id}-${Date.now()}.pdf`;
       await writeFile(tempMdPath, markdown);
-      await execAsync(`/usr/local/bin/manus-md-to-pdf ${tempMdPath} ${tempPdfPath}`, {
-        env: { ...process.env, PATH: `/usr/local/bin:${process.env.PATH}` }
+      
+      // Convert markdown to HTML
+      const html = marked(markdown);
+      
+      // Generate PDF using puppeteer
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
+      
+      try {
+        const page = await browser.newPage();
+        await page.setContent(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="UTF-8">
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; }
+                h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                h2 { color: #555; margin-top: 30px; }
+                h3 { color: #777; }
+                table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+              </style>
+            </head>
+            <body>${html}</body>
+          </html>
+        `, { waitUntil: 'networkidle0' });
+        
+        await page.pdf({
+          path: tempPdfPath,
+          format: 'A4',
+          margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
+          printBackground: true
+        });
+      } finally {
+        await browser.close();
+      }
       
       const pdfBuffer = await readFile(tempPdfPath);
       const fileName = `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Deliverable.pdf`;

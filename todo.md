@@ -212,3 +212,9 @@
 - [x] Check if utility exists and is accessible
 - [x] Implement fallback PDF generation using alternative method - added PATH environment to execAsync
 - [x] Test PDF export works reliably
+
+## Implement Alternative PDF Generation
+- [x] Check if manus-md-to-pdf is available in deployment environment
+- [x] Install and configure puppeteer for PDF generation
+- [x] Update export service to use Node.js-based PDF generation with puppeteer
+- [x] Test PDF generation works in all environments - Successfully tested with puppeteer

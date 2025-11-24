@@ -357,33 +357,41 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        const { getArtifactById, getProjectById } = await import("./db");
-        const { exportToMarkdown, exportToPDF, exportToWord } = await import("./exportService");
-        
-        const artifact = await getArtifactById(input.artifactId);
-        if (!artifact) throw new Error("Artifact not found");
-        
-        const project = await getProjectById(artifact.projectId);
-        if (!project) throw new Error("Project not found");
-        
-        let url: string;
-        if (input.format === "markdown") {
-          const markdown = await exportToMarkdown(artifact, project);
-          const { storagePut } = await import("./storage");
-          const fileName = `${artifact.name.replace(/[^a-zA-Z0-9]/g, '_')}.md`;
-          const result = await storagePut(
-            `exports/${project.id}/${fileName}`,
-            Buffer.from(markdown),
-            'text/markdown'
-          );
-          url = result.url;
-        } else if (input.format === "pdf") {
-          url = await exportToPDF(artifact, project);
-        } else {
-          url = await exportToWord(artifact, project);
+        try {
+          console.log(`[Export] Starting ${input.format} export for artifact ${input.artifactId}`);
+          const { getArtifactById, getProjectById } = await import("./db");
+          const { exportToMarkdown, exportToPDF, exportToWord } = await import("./exportService");
+          
+          const artifact = await getArtifactById(input.artifactId);
+          if (!artifact) throw new Error("Artifact not found");
+          
+          const project = await getProjectById(artifact.projectId);
+          if (!project) throw new Error("Project not found");
+          
+          let url: string;
+          if (input.format === "markdown") {
+            const markdown = await exportToMarkdown(artifact, project);
+            const { storagePut } = await import("./storage");
+            const fileName = `${artifact.name.replace(/[^a-zA-Z0-9]/g, '_')}.md`;
+            const result = await storagePut(
+              `exports/${project.id}/${fileName}`,
+              Buffer.from(markdown),
+              'text/markdown'
+            );
+            url = result.url;
+          } else if (input.format === "pdf") {
+            console.log('[Export] Calling exportToPDF');
+            url = await exportToPDF(artifact, project);
+            console.log('[Export] PDF export completed, URL:', url);
+          } else {
+            url = await exportToWord(artifact, project);
+          }
+          
+          return { url };
+        } catch (error) {
+          console.error('[Export] Error during export:', error);
+          throw error;
         }
-        
-        return { url };
       }),
     deliverable: protectedProcedure
       .input(
