@@ -1,0 +1,341 @@
+/**
+ * EA Entity Management Router
+ * 
+ * Handles CRUD operations for EA meta-model entities with built-in validation:
+ * - Automatic normalizedName generation
+ * - Relationship type matrix validation
+ * - Entity type validation
+ * - Duplicate detection
+ */
+
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { protectedProcedure, router } from "./_core/trpc";
+import { getDb } from "./db";
+import { 
+  businessCapabilities,
+  applications,
+  businessProcesses,
+  dataEntities,
+  requirements,
+  eaRelationships,
+} from "../drizzle/schema";
+import { 
+  normalizeName,
+  validateRelationshipMatrix,
+  validateEntityType,
+  validateDifferentEntities,
+  DuplicateNameError,
+  RelationshipMatrixError,
+  InvalidEntityTypeError,
+  type EntityType,
+  type RelationshipType,
+  getTableNameFromEntityType,
+} from "./validation";
+import { eq, and } from "drizzle-orm";
+
+/**
+ * Base schema for entity creation
+ */
+const baseEntitySchema = z.object({
+  projectId: z.number(),
+  name: z.string().min(1, "Name is required"),
+  description: z.string().nullable().optional(),
+});
+
+/**
+ * Business Capability schema (level is required)
+ */
+const businessCapabilitySchema = baseEntitySchema.extend({
+  level: z.number().min(1).max(5), // L1 to L5
+  parentId: z.number().nullable().optional(),
+  maturityLevel: z.string().nullable().optional(),
+  ownerStakeholderId: z.number().nullable().optional(),
+});
+
+/**
+ * Application schema (lifecycle is required with default)
+ */
+const applicationSchema = baseEntitySchema.extend({
+  vendor: z.string().nullable().optional(),
+  version: z.string().nullable().optional(),
+  lifecycle: z.enum(["plan", "build", "run", "retire"]).optional(),
+  category: z.string().nullable().optional(),
+  criticality: z.enum(["low", "medium", "high", "critical"]).optional(),
+  ownerStakeholderId: z.number().nullable().optional(),
+});
+
+/**
+ * Business Process schema
+ */
+const businessProcessSchema = baseEntitySchema.extend({
+  processType: z.string().nullable().optional(),
+  ownerStakeholderId: z.number().nullable().optional(),
+  automationLevel: z.string().nullable().optional(),
+});
+
+/**
+ * Data Entity schema (sensitivity has default)
+ */
+const dataEntitySchema = baseEntitySchema.extend({
+  classification: z.string().nullable().optional(),
+  sensitivity: z.enum(["public", "internal", "confidential", "restricted"]).optional(),
+  ownerStakeholderId: z.number().nullable().optional(),
+});
+
+/**
+ * Requirement schema
+ */
+const requirementSchema = baseEntitySchema.extend({
+  type: z.string().min(1, "Type is required"),
+  priority: z.enum(["low", "medium", "high", "critical"]).optional(),
+  status: z.enum(["proposed", "approved", "implemented", "verified"]).optional(),
+  source: z.string().nullable().optional(),
+  ownerStakeholderId: z.number().nullable().optional(),
+});
+
+/**
+ * Relationship schema
+ */
+const relationshipSchema = z.object({
+  projectId: z.number(),
+  sourceEntityType: z.string(),
+  sourceEntityId: z.number(),
+  targetEntityType: z.string(),
+  targetEntityId: z.number(),
+  relationshipType: z.string(),
+  description: z.string().nullable().optional(),
+});
+
+/**
+ * Implemented entity types (subset of EntityType)
+ */
+type ImplementedEntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
+
+/**
+ * Helper function to check for duplicate normalized names
+ */
+async function checkDuplicateName(
+  projectId: number,
+  normalizedName: string,
+  entityType: ImplementedEntityType,
+  excludeId?: number
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+  const table = {
+    businessCapability: businessCapabilities,
+    application: applications,
+    businessProcess: businessProcesses,
+    dataEntity: dataEntities,
+    requirement: requirements,
+  }[entityType];
+
+  if (!table) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: `Unknown entity type: ${entityType}` });
+  }
+
+  const conditions = [
+    eq(table.projectId, projectId),
+    eq(table.normalizedName, normalizedName),
+  ];
+
+  const existing = await db.select().from(table).where(and(...conditions)).limit(1);
+
+  if (existing.length > 0 && (!excludeId || existing[0].id !== excludeId)) {
+    throw new DuplicateNameError(normalizedName, projectId, entityType);
+  }
+}
+
+/**
+ * EA Entity Router
+ */
+export const eaEntityRouter = router({
+  // ============================================================================
+  // Business Capabilities
+  // ============================================================================
+  
+  createBusinessCapability: protectedProcedure
+    .input(businessCapabilitySchema)
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const normalizedName = normalizeName(input.name);
+      await checkDuplicateName(input.projectId, normalizedName, 'businessCapability');
+
+      const result = await db.insert(businessCapabilities).values({
+        ...input,
+        normalizedName,
+        createdBy: ctx.user.id,
+      });
+
+      return { id: Number(result[0].insertId), normalizedName };
+    }),
+
+  // ============================================================================
+  // Applications
+  // ============================================================================
+
+  createApplication: protectedProcedure
+    .input(applicationSchema)
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const normalizedName = normalizeName(input.name);
+      await checkDuplicateName(input.projectId, normalizedName, 'application');
+
+      const result = await db.insert(applications).values({
+        ...input,
+        normalizedName,
+        createdBy: ctx.user.id,
+      });
+
+      return { id: Number(result[0].insertId), normalizedName };
+    }),
+
+  // ============================================================================
+  // Business Processes
+  // ============================================================================
+
+  createBusinessProcess: protectedProcedure
+    .input(businessProcessSchema)
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const normalizedName = normalizeName(input.name);
+      await checkDuplicateName(input.projectId, normalizedName, 'businessProcess');
+
+      const result = await db.insert(businessProcesses).values({
+        ...input,
+        normalizedName,
+        createdBy: ctx.user.id,
+      });
+
+      return { id: Number(result[0].insertId), normalizedName };
+    }),
+
+  // ============================================================================
+  // Data Entities
+  // ============================================================================
+
+  createDataEntity: protectedProcedure
+    .input(dataEntitySchema)
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const normalizedName = normalizeName(input.name);
+      await checkDuplicateName(input.projectId, normalizedName, 'dataEntity');
+
+      const result = await db.insert(dataEntities).values({
+        ...input,
+        normalizedName,
+        createdBy: ctx.user.id,
+      });
+
+      return { id: Number(result[0].insertId), normalizedName };
+    }),
+
+  // ============================================================================
+  // Requirements
+  // ============================================================================
+
+  createRequirement: protectedProcedure
+    .input(requirementSchema)
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const normalizedName = normalizeName(input.name);
+      await checkDuplicateName(input.projectId, normalizedName, 'requirement');
+
+      const result = await db.insert(requirements).values({
+        ...input,
+        normalizedName,
+        createdBy: ctx.user.id,
+      });
+
+      return { id: Number(result[0].insertId), normalizedName };
+    }),
+
+  // ============================================================================
+  // Relationships
+  // ============================================================================
+
+  createRelationship: protectedProcedure
+    .input(relationshipSchema)
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      try {
+        // Validate entity types
+        validateEntityType(input.sourceEntityType);
+        validateEntityType(input.targetEntityType);
+
+        // Validate different entities
+        validateDifferentEntities(
+          input.sourceEntityType as EntityType,
+          input.sourceEntityId,
+          input.targetEntityType as EntityType,
+          input.targetEntityId
+        );
+
+        // Validate relationship matrix
+        validateRelationshipMatrix(
+          input.sourceEntityType as EntityType,
+          input.targetEntityType as EntityType,
+          input.relationshipType as RelationshipType
+        );
+
+        // Create relationship
+        const result = await db.insert(eaRelationships).values({
+          ...input,
+          createdBy: ctx.user.id,
+        });
+
+        return { id: Number(result[0].insertId) };
+      } catch (error) {
+        if (error instanceof RelationshipMatrixError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+        if (error instanceof InvalidEntityTypeError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+        throw error;
+      }
+    }),
+
+  deleteRelationship: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      projectId: z.number(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Soft delete
+      await db.update(eaRelationships)
+        .set({ 
+          deletedAt: new Date(),
+          deletedBy: ctx.user.id,
+        })
+        .where(and(
+          eq(eaRelationships.id, input.id),
+          eq(eaRelationships.projectId, input.projectId)
+        ));
+
+      return { success: true };
+    }),
+});

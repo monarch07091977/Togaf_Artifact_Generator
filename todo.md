@@ -158,3 +158,22 @@
 ### Known Issues
 - [ ] OAuth redirect URI configuration for preview URLs (platform issue)
 - [ ] PDF export in deployed environment (Chromium path resolution)
+
+
+## Service Layer Validation (Phase 1.5 - Completed)
+
+### Validation Logic Implementation
+- [x] Create relationship type matrix validation module
+- [x] Implement automatic normalizedName generation on entity create/update
+- [x] Add entity type validation to relationship creation
+- [x] Add validation error messages and error handling
+- [x] Create validation utility functions for reuse across service layer
+- [x] Create EA entity CRUD router with built-in validation
+- [ ] Add validation tests
+
+### Validation Rules
+- [x] Enforce relationship type matrix (which entities can connect with which types)
+- [x] Validate normalizedName uniqueness per project
+- [x] Validate entity types match schema enums
+- [x] Validate relationship source and target are different entities
+- [x] Validate projectId consistency across related entities
