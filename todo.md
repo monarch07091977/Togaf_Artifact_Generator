@@ -177,3 +177,36 @@
 - [x] Validate entity types match schema enums
 - [x] Validate relationship source and target are different entities
 - [x] Validate projectId consistency across related entities
+
+
+## EA Entity Browser UI (Phase 1.6 - Completed)
+
+### Backend Queries
+- [x] Add list queries for all EA entity types (businessCapabilities, applications, etc.)
+- [x] Add relationship queries (get relationships for entity, get all relationships for project)
+- [x] Add search/filter support (by name, type, project)
+- [x] Add pagination support for large entity lists
+
+### UI Components
+- [x] Create EntityBrowser page component
+- [x] Create EntityList component with search and filters
+- [x] Create EntityCard component for displaying entity details
+- [x] Create EntityCreateDialog component
+- [x] Create EntityDetailDialog component with relationship visualization
+- [ ] Create EntityEditDialog component (future enhancement)
+
+### Features
+- [x] Entity type tabs (Business Capabilities, Applications, Processes, Data, Requirements)
+- [x] Search by name with real-time filtering
+- [x] Filter by project (implicit - scoped to project)
+- [x] Create new entities with validation
+- [x] View entity details
+- [x] View entity relationships (incoming and outgoing)
+- [ ] Edit existing entities (future enhancement)
+- [ ] Delete entities (soft delete) (future enhancement)
+- [ ] Interactive graph visualization (future enhancement)
+
+### Navigation
+- [x] Add EA Entity Browser link to project detail page
+- [x] Add route in App.tsx
+- [x] Navigation from project page to EA entities

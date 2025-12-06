@@ -1,0 +1,259 @@
+import { useState } from "react";
+import { useLocation, useRoute } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Search, Plus, Building2, Boxes, GitBranch, Database, FileText } from "lucide-react";
+import { toast } from "sonner";
+import { EntityCreateDialog } from "@/components/EntityCreateDialog";
+import { EntityDetailDialog } from "@/components/EntityDetailDialog";
+
+type EntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
+
+const ENTITY_CONFIG = {
+  businessCapability: {
+    label: 'Business Capabilities',
+    icon: Building2,
+    description: 'Abilities or capacities that a business may possess or exchange',
+    color: 'bg-blue-100 text-blue-800',
+  },
+  application: {
+    label: 'Applications',
+    icon: Boxes,
+    description: 'Deployed and operational IT systems that support business functions',
+    color: 'bg-green-100 text-green-800',
+  },
+  businessProcess: {
+    label: 'Business Processes',
+    icon: GitBranch,
+    description: 'Structured activities that produce a specific service or product',
+    color: 'bg-purple-100 text-purple-800',
+  },
+  dataEntity: {
+    label: 'Data Entities',
+    icon: Database,
+    description: 'Encapsulation of data recognized by a business domain expert',
+    color: 'bg-orange-100 text-orange-800',
+  },
+  requirement: {
+    label: 'Requirements',
+    icon: FileText,
+    description: 'Statements of need that must be met by the architecture',
+    color: 'bg-pink-100 text-pink-800',
+  },
+};
+
+interface EntityListProps {
+  projectId: number;
+  entityType: EntityType;
+  onCreateClick: () => void;
+  onEntityClick: (entity: any) => void;
+}
+
+function EntityList({ projectId, entityType, onCreateClick, onEntityClick }: EntityListProps) {
+  const [search, setSearch] = useState("");
+  const config = ENTITY_CONFIG[entityType];
+  const Icon = config.icon;
+
+  const { data: entities, isLoading } = trpc.eaEntity.listEntities.useQuery({
+    projectId,
+    entityType,
+    search: search || undefined,
+    limit: 50,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-muted-foreground">Loading {config.label.toLowerCase()}...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={`Search ${config.label.toLowerCase()}...`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Button onClick={onCreateClick}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create {config.label.slice(0, -1)}
+        </Button>
+      </div>
+
+      {entities && entities.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Icon className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground text-center">
+              {search
+                ? `No ${config.label.toLowerCase()} found matching "${search}"`
+                : `No ${config.label.toLowerCase()} yet. Create your first one to get started.`}
+            </p>
+            {!search && (
+              <Button onClick={onCreateClick} className="mt-4">
+                <Plus className="h-4 w-4 mr-2" />
+                Create {config.label.slice(0, -1)}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {entities?.map((entity: any) => (
+            <Card
+              key={entity.id}
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => onEntityClick(entity)}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle className="text-lg">{entity.name}</CardTitle>
+                  </div>
+                  <Badge className={config.color} variant="secondary">
+                    {entityType === 'businessCapability' && entity.level && `L${entity.level}`}
+                    {entityType === 'application' && entity.lifecycle}
+                    {entityType === 'dataEntity' && entity.sensitivity}
+                    {entityType === 'requirement' && entity.priority}
+                  </Badge>
+                </div>
+                {entity.description && (
+                  <CardDescription className="line-clamp-2">
+                    {entity.description}
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>ID: {entity.id}</span>
+                  {entity.normalizedName && (
+                    <span className="text-xs truncate max-w-[150px]" title={entity.normalizedName}>
+                      {entity.normalizedName}
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {entities && entities.length > 0 && (
+        <div className="text-sm text-muted-foreground text-center">
+          Showing {entities.length} {config.label.toLowerCase()}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function EAEntityBrowser() {
+  const [, params] = useRoute("/projects/:projectId/ea-entities");
+  const projectId = params?.projectId ? parseInt(params.projectId) : null;
+  const [activeTab, setActiveTab] = useState<EntityType>('businessCapability');
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedEntity, setSelectedEntity] = useState<any>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+
+  if (!projectId) {
+    return (
+      <div className="container py-8">
+        <Card>
+          <CardContent className="py-12">
+            <p className="text-center text-muted-foreground">
+              Project ID not found. Please navigate from a project page.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const handleCreateClick = () => {
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateSuccess = () => {
+    // Dialog will invalidate queries automatically
+  };
+
+  const handleEntityClick = (entity: any) => {
+    setSelectedEntity(entity);
+    setDetailDialogOpen(true);
+  };
+
+  return (
+    <div className="container py-8 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">EA Entity Browser</h1>
+        <p className="text-muted-foreground mt-2">
+          Browse and manage your Enterprise Architecture meta-model entities
+        </p>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as EntityType)}>
+        <TabsList className="grid w-full grid-cols-5">
+          {Object.entries(ENTITY_CONFIG).map(([type, config]) => {
+            const Icon = config.icon;
+            return (
+              <TabsTrigger key={type} value={type} className="flex items-center gap-2">
+                <Icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{config.label}</span>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        {Object.entries(ENTITY_CONFIG).map(([type, config]) => {
+          const Icon = config.icon;
+          return (
+            <TabsContent key={type} value={type} className="mt-6">
+              <Card className="mb-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Icon className="h-5 w-5" />
+                    {config.label}
+                  </CardTitle>
+                  <CardDescription>{config.description}</CardDescription>
+                </CardHeader>
+              </Card>
+              <EntityList
+                projectId={projectId}
+                entityType={type as EntityType}
+                onCreateClick={handleCreateClick}
+                onEntityClick={handleEntityClick}
+              />
+            </TabsContent>
+          );
+        })}
+      </Tabs>
+
+      <EntityCreateDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        projectId={projectId}
+        entityType={activeTab}
+        onSuccess={handleCreateSuccess}
+      />
+
+      <EntityDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        entity={selectedEntity}
+        entityType={activeTab}
+      />
+    </div>
+  );
+}

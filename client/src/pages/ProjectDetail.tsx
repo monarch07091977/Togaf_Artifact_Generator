@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, Plus, FileText, Network, BarChart3, Trash2, Pencil } from "lucide-react";
+import { ArrowLeft, Plus, FileText, Network, BarChart3, Trash2, Pencil, Database } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useLocation, useRoute } from "wouter";
 import { ADM_PHASES } from "../../../shared/togafArtifacts";
@@ -180,6 +180,13 @@ export default function ProjectDetail() {
             <p className="text-muted-foreground mt-2">{project.description}</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setLocation(`/projects/${projectId}/ea-entities`)}
+            >
+              <Database className="mr-2 h-4 w-4" />
+              EA Entities
+            </Button>
             <Button
               variant="ghost"
               size="icon"

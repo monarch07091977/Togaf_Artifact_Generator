@@ -32,7 +32,7 @@ import {
   type RelationshipType,
   getTableNameFromEntityType,
 } from "./validation";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, like, isNull } from "drizzle-orm";
 
 /**
  * Base schema for entity creation
@@ -152,6 +152,124 @@ async function checkDuplicateName(
  * EA Entity Router
  */
 export const eaEntityRouter = router({
+  // ============================================================================
+  // List and Search Queries
+  // ============================================================================
+
+  listEntities: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      entityType: z.enum(['businessCapability', 'application', 'businessProcess', 'dataEntity', 'requirement']),
+      search: z.string().optional(),
+      limit: z.number().min(1).max(100).optional().default(50),
+      offset: z.number().min(0).optional().default(0),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const table: any = {
+        businessCapability: businessCapabilities,
+        application: applications,
+        businessProcess: businessProcesses,
+        dataEntity: dataEntities,
+        requirement: requirements,
+      }[input.entityType];
+
+      const conditions: any[] = [
+        eq(table.projectId, input.projectId),
+        isNull(table.deletedAt)
+      ];
+
+      if (input.search) {
+        const searchPattern = `%${input.search}%`;
+        conditions.push(
+          or(
+            like(table.name, searchPattern),
+            like(table.description, searchPattern)
+          )
+        );
+      }
+
+      const results = await db.select().from(table)
+        .where(and(...conditions))
+        .limit(input.limit)
+        .offset(input.offset)
+        .orderBy(table.name);
+
+      return results;
+    }),
+
+  getEntity: protectedProcedure
+    .input(z.object({
+      entityType: z.enum(['businessCapability', 'application', 'businessProcess', 'dataEntity', 'requirement']),
+      id: z.number(),
+      projectId: z.number(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const table: any = {
+        businessCapability: businessCapabilities,
+        application: applications,
+        businessProcess: businessProcesses,
+        dataEntity: dataEntities,
+        requirement: requirements,
+      }[input.entityType];
+
+      const result = await db.select().from(table)
+        .where(and(
+          eq(table.id, input.id),
+          eq(table.projectId, input.projectId),
+          isNull(table.deletedAt)
+        ))
+        .limit(1);
+
+      if (result.length === 0) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Entity not found" });
+      }
+
+      return result[0];
+    }),
+
+  listRelationships: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      entityType: z.string().optional(),
+      entityId: z.number().optional(),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const conditions: any[] = [
+        eq(eaRelationships.projectId, input.projectId),
+        isNull(eaRelationships.deletedAt)
+      ];
+
+      if (input.entityType && input.entityId) {
+        conditions.push(
+          or(
+            and(
+              eq(eaRelationships.sourceEntityType, input.entityType),
+              eq(eaRelationships.sourceEntityId, input.entityId)
+            ),
+            and(
+              eq(eaRelationships.targetEntityType, input.entityType),
+              eq(eaRelationships.targetEntityId, input.entityId)
+            )
+          )
+        );
+      }
+
+      const results = await db.select().from(eaRelationships)
+        .where(and(...conditions))
+        .orderBy(eaRelationships.createdAt);
+
+      return results;
+    }),
+
   // ============================================================================
   // Business Capabilities
   // ============================================================================
