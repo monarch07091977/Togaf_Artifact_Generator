@@ -15,6 +15,13 @@
       "when": 1763433571087,
       "tag": "0001_confused_shard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1764996334818,
+      "tag": "0002_watery_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }
