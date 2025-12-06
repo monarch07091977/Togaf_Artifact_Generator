@@ -241,3 +241,35 @@
 - [x] Add graph view to EA Entity Browser
 - [x] Toggle between list view and graph view
 - [x] Sync graph with entity selection (click node to view details)
+
+
+## Relationship Creator (Phase 1.8 - Completed)
+
+### Backend
+- [x] Add createRelationship mutation with validation
+- [x] Add deleteRelationship mutation (soft delete)
+- [x] Add relationship type matrix validation to backend
+- [ ] Add updateRelationship mutation (future enhancement)
+
+### UI Components
+- [x] Create RelationshipCreateDialog component
+- [x] Add entity selection dropdowns (source and target)
+- [x] Add relationship type selector with allowed types
+- [x] Show validation errors for invalid combinations
+- [x] Add relationship description field
+- [x] Add delete confirmation dialog
+
+### Features
+- [x] Create relationships between entities
+- [x] Validate relationship type matrix (enforce allowed combinations)
+- [x] Show only valid relationship types based on entity types
+- [x] Delete relationships (soft delete)
+- [x] View relationships in entity detail dialog
+- [ ] Edit existing relationships (future enhancement)
+- [ ] View relationship history (future enhancement)
+
+### Integration
+- [x] Add "Create Relationship" button to EA Entity Browser
+- [x] Add relationship delete actions to entity detail dialog
+- [x] Update graph view after relationship changes
+- [x] Update list view after relationship changes

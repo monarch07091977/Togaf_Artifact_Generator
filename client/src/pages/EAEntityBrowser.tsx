@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Building2, Boxes, GitBranch, Database, FileText, Network, List } from "lucide-react";
+import { Search, Plus, Building2, Boxes, GitBranch, Database, FileText, Network, List, Link } from "lucide-react";
 import { toast } from "sonner";
 import { EntityCreateDialog } from "@/components/EntityCreateDialog";
 import { EntityDetailDialog } from "@/components/EntityDetailDialog";
 import { RelationshipGraph } from "@/components/RelationshipGraph";
+import { RelationshipCreateDialog } from "@/components/RelationshipCreateDialog";
 
 type EntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
 
@@ -219,6 +220,7 @@ export default function EAEntityBrowser() {
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'graph'>('list');
+  const [relationshipDialogOpen, setRelationshipDialogOpen] = useState(false);
 
   if (!projectId) {
     return (
@@ -257,6 +259,15 @@ export default function EAEntityBrowser() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setRelationshipDialogOpen(true)}
+          >
+            <Link className="mr-2 h-4 w-4" />
+            Create Relationship
+          </Button>
+          <div className="h-6 w-px bg-border" />
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
@@ -333,6 +344,15 @@ export default function EAEntityBrowser() {
         onOpenChange={setDetailDialogOpen}
         entity={selectedEntity}
         entityType={activeTab}
+      />
+
+      <RelationshipCreateDialog
+        open={relationshipDialogOpen}
+        onOpenChange={setRelationshipDialogOpen}
+        projectId={projectId}
+        onSuccess={() => {
+          // Refresh graph and list views
+        }}
       />
     </div>
   );
