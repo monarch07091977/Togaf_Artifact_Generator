@@ -366,3 +366,34 @@
 - [x] Business Process template (name, description)
 - [x] Data Entity template (name, description, sensitivity)
 - [x] Requirement template (name, description, type, priority)
+
+
+## Audit History Timeline (Phase 1.12 - Completed)
+
+### Backend Queries
+- [x] Create audit history query combining entity and relationship changes
+- [x] Add filtering by entity type, action type
+- [x] Add pagination for large history
+- [x] Include user attribution (createdBy, updatedBy, deletedBy)
+
+### UI Components
+- [x] Create AuditHistory page component
+- [x] Create timeline view with chronological events
+- [x] Create event cards showing change details
+- [x] Add filter controls (entity type, action type)
+- [x] Add search by entity name
+
+### Features
+- [x] Show entity creation, update, deletion events
+- [x] Show relationship creation, deletion events
+- [x] Display user who made each change
+- [x] Relative timestamps (e.g., "2 hours ago")
+- [x] Filter by entity type
+- [x] Filter by action type (create, update, delete)
+- [x] Search by entity name
+- [x] Load more pagination
+
+### Integration
+- [x] Add "Audit History" button to project detail page
+- [x] Add route in App.tsx
+- [ ] Link from entity detail dialogs (future enhancement)

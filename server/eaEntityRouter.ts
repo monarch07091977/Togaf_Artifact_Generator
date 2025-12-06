@@ -693,4 +693,150 @@ export const eaEntityRouter = router({
 
       return results;
     }),
+
+  /**
+   * Get audit history for a project
+   * Returns chronological list of all entity and relationship changes
+   */
+  getAuditHistory: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      entityType: z.enum(['businessCapability', 'application', 'businessProcess', 'dataEntity', 'requirement', 'all']).optional(),
+      actionType: z.enum(['create', 'update', 'delete', 'all']).optional(),
+      searchTerm: z.string().optional(),
+      limit: z.number().min(1).max(100).default(50),
+      offset: z.number().min(0).default(0),
+    }))
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const events: any[] = [];
+
+      // Helper to add entity events
+      const addEntityEvents = async (table: any, entityType: string) => {
+        if (input.entityType && input.entityType !== 'all' && input.entityType !== entityType) return;
+
+        const conditions = [eq(table.projectId, input.projectId)];
+        if (input.searchTerm) {
+          conditions.push(like(table.name, `%${input.searchTerm}%`));
+        }
+
+        const entities = await db.select().from(table).where(and(...conditions));
+
+        entities.forEach((entity: any) => {
+          // Creation event
+          if (!input.actionType || input.actionType === 'all' || input.actionType === 'create') {
+            events.push({
+              id: `${entityType}-${entity.id}-create`,
+              type: 'entity',
+              action: 'create',
+              entityType,
+              entityId: entity.id,
+              entityName: entity.name,
+              timestamp: entity.createdAt,
+              user: entity.createdBy || 'System',
+              details: { name: entity.name, description: entity.description },
+            });
+          }
+
+          // Update event (if updatedAt differs from createdAt)
+          if (entity.updatedAt && entity.updatedAt.getTime() !== entity.createdAt.getTime()) {
+            if (!input.actionType || input.actionType === 'all' || input.actionType === 'update') {
+              events.push({
+                id: `${entityType}-${entity.id}-update`,
+                type: 'entity',
+                action: 'update',
+                entityType,
+                entityId: entity.id,
+                entityName: entity.name,
+                timestamp: entity.updatedAt,
+                user: entity.updatedBy || entity.createdBy || 'System',
+                details: { name: entity.name },
+              });
+            }
+          }
+
+          // Deletion event
+          if (entity.deletedAt) {
+            if (!input.actionType || input.actionType === 'all' || input.actionType === 'delete') {
+              events.push({
+                id: `${entityType}-${entity.id}-delete`,
+                type: 'entity',
+                action: 'delete',
+                entityType,
+                entityId: entity.id,
+                entityName: entity.name,
+                timestamp: entity.deletedAt,
+                user: entity.deletedBy || 'System',
+                details: { name: entity.name },
+              });
+            }
+          }
+        });
+      };
+
+      // Add events from all entity tables
+      await addEntityEvents(businessCapabilities, 'businessCapability');
+      await addEntityEvents(applications, 'application');
+      await addEntityEvents(businessProcesses, 'businessProcess');
+      await addEntityEvents(dataEntities, 'dataEntity');
+      await addEntityEvents(requirements, 'requirement');
+
+      // Add relationship events
+      if (!input.entityType || input.entityType === 'all') {
+        const relationships = await db.select().from(eaRelationships)
+          .where(eq(eaRelationships.projectId, input.projectId));
+
+        relationships.forEach((rel: any) => {
+          // Creation event
+          if (!input.actionType || input.actionType === 'all' || input.actionType === 'create') {
+            events.push({
+              id: `relationship-${rel.id}-create`,
+              type: 'relationship',
+              action: 'create',
+              relationshipType: rel.relationshipType,
+              sourceEntityType: rel.sourceEntityType,
+              sourceEntityId: rel.sourceEntityId,
+              targetEntityType: rel.targetEntityType,
+              targetEntityId: rel.targetEntityId,
+              timestamp: rel.createdAt,
+              user: rel.createdBy || 'System',
+              details: { relationshipType: rel.relationshipType },
+            });
+          }
+
+          // Deletion event
+          if (rel.deletedAt) {
+            if (!input.actionType || input.actionType === 'all' || input.actionType === 'delete') {
+              events.push({
+                id: `relationship-${rel.id}-delete`,
+                type: 'relationship',
+                action: 'delete',
+                relationshipType: rel.relationshipType,
+                sourceEntityType: rel.sourceEntityType,
+                sourceEntityId: rel.sourceEntityId,
+                targetEntityType: rel.targetEntityType,
+                targetEntityId: rel.targetEntityId,
+                timestamp: rel.deletedAt,
+                user: rel.deletedBy || 'System',
+                details: { relationshipType: rel.relationshipType },
+              });
+            }
+          }
+        });
+      }
+
+      // Sort by timestamp descending (most recent first)
+      events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+      // Apply pagination
+      const paginatedEvents = events.slice(input.offset, input.offset + input.limit);
+
+      return {
+        events: paginatedEvents,
+        total: events.length,
+        hasMore: events.length > input.offset + input.limit,
+      };
+    }),
 });
