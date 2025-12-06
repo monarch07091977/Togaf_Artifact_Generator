@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE stakeholders ADD COLUMN IF NOT EXISTS normalizedName VARCHAR(255) NOT NULL DEFAULT '' AFTER name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user MCXikgkEWzjEGDB.4f9baeb9deaf --database fq5wr6YzXYEsLcWqw7mDwv --execute ALTER TABLE stakeholders ADD COLUMN IF NOT EXISTS normalizedName VARCHAR(255) NOT NULL DEFAULT '' AFTER name;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table 'fq5wr6yzxyeslcwqw7mdwv.stakeholders' doesn't exist"
+  ]
+}

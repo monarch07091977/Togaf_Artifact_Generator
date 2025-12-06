@@ -37,7 +37,7 @@ export const appRouter = router({
           name: input.name,
           description: input.description,
           currentPhase: "Preliminary",
-          status: "active",
+
         });
         return { id: projectId };
       }),
@@ -83,12 +83,12 @@ export const appRouter = router({
       .input(
         z.object({
           projectId: z.number(),
-          phase: z.string(),
+          admPhase: z.string(),
         })
       )
       .query(async ({ input }) => {
         const { getArtifactsByPhase } = await import("./db");
-        return getArtifactsByPhase(input.projectId, input.phase);
+        return getArtifactsByPhase(input.projectId, input.admPhase);
       }),
     create: protectedProcedure
       .input(
@@ -96,14 +96,14 @@ export const appRouter = router({
           projectId: z.number(),
           type: z.enum(["catalog", "matrix", "diagram"]),
           name: z.string(),
-          phase: z.string(),
+          admPhase: z.string(),
         })
       )
       .mutation(async ({ input }) => {
         const { createArtifact } = await import("./db");
         const artifactId = await createArtifact({
           ...input,
-          status: "not_started",
+          status: "draft",
         });
         return { id: artifactId };
       }),
@@ -118,8 +118,7 @@ export const appRouter = router({
         z.object({
           id: z.number(),
           content: z.string().optional(),
-          generatedContent: z.string().optional(),
-          status: z.enum(["not_started", "in_progress", "completed", "reviewed"]).optional(),
+          status: z.enum(["draft", "in_progress", "review", "approved"]).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -168,19 +167,16 @@ export const appRouter = router({
         
         // Save generated content
         await updateArtifact(input.artifactId, {
-          generatedContent: result.content,
-          status: "completed",
+          content: result.content,
+          status: "approved",
         });
         
         // Save assumptions
         for (const assumption of result.assumptions) {
           await createAssumption({
             artifactId: input.artifactId,
-            description: assumption.description,
+            assumption: assumption.description,
             rationale: assumption.rationale,
-            impact: assumption.impact,
-            status: "active",
-            createdBy: "ai",
           });
         }
         
@@ -204,10 +200,8 @@ export const appRouter = router({
       .input(
         z.object({
           artifactId: z.number(),
-          questionId: z.string(),
-          questionText: z.string(),
+          question: z.string(),
           answer: z.string(),
-          source: z.enum(["user_input", "auto_populated", "ai_suggested"]),
         })
       )
       .mutation(async ({ input }) => {
@@ -226,7 +220,7 @@ export const appRouter = router({
         z.object({
           artifactId: z.number(),
           artifactDefId: z.string(),
-          phase: z.string(),
+          admPhase: z.string(),
           projectId: z.number(),
         })
       )
@@ -240,7 +234,7 @@ export const appRouter = router({
         // Get relevant source artifacts
         const sourceArtifacts = getRelevantSourceArtifacts(
           input.artifactDefId,
-          input.phase,
+          input.admPhase,
           allArtifacts
         );
         
@@ -264,7 +258,7 @@ export const appRouter = router({
         // Merge with user responses
         const merged = mergeWithUserResponses(autoPopulated, userResponses);
         
-        return { data: merged, sourceArtifacts: sourceArtifacts.map(a => ({ id: a.id, name: a.name, phase: a.phase })) };
+        return { data: merged, sourceArtifacts: sourceArtifacts.map(a => ({ id: a.id, name: a.name, phase: a.admPhase })) };
       }),
     getSuggestions: protectedProcedure
       .input(
@@ -295,18 +289,13 @@ export const appRouter = router({
       .input(
         z.object({
           artifactId: z.number(),
-          description: z.string(),
+          assumption: z.string(),
           rationale: z.string().optional(),
-          impact: z.enum(["low", "medium", "high"]),
         })
       )
       .mutation(async ({ input }) => {
         const { createAssumption } = await import("./db");
-        const assumptionId = await createAssumption({
-          ...input,
-          status: "active",
-          createdBy: "user",
-        });
+        const assumptionId = await createAssumption(input);
         return { id: assumptionId };
       }),
     update: protectedProcedure
@@ -333,7 +322,7 @@ export const appRouter = router({
         z.object({
           question: z.string(),
           artifactName: z.string(),
-          phase: z.string(),
+          admPhase: z.string(),
           projectDescription: z.string().optional(),
         })
       )
@@ -341,7 +330,7 @@ export const appRouter = router({
         const { provideDomainExpertise } = await import("./aiService");
         const answer = await provideDomainExpertise(input.question, {
           artifactName: input.artifactName,
-          phase: input.phase,
+          admPhase: input.admPhase,
           projectDescription: input.projectDescription,
         });
         return { answer };
@@ -408,7 +397,7 @@ export const appRouter = router({
         if (!project) throw new Error("Project not found");
         
         const artifacts = await getArtifactsByProjectId(input.projectId);
-        const completedArtifacts = artifacts.filter(a => a.status === "completed" && a.generatedContent);
+        const completedArtifacts = artifacts.filter(a => a.status === "approved" && a.content);
         
         if (completedArtifacts.length === 0) {
           throw new Error("No completed artifacts to export");
@@ -456,7 +445,7 @@ export const appRouter = router({
         if (!project) throw new Error("Project not found");
         
         const artifacts = await getArtifactsByProjectId(input.projectId);
-        const completedArtifacts = artifacts.filter(a => a.status === "completed" && a.generatedContent);
+        const completedArtifacts = artifacts.filter(a => a.status === "approved" && a.content);
         
         if (completedArtifacts.length === 0) {
           throw new Error("No completed artifacts to include in deck");
@@ -504,7 +493,7 @@ export const appRouter = router({
         
         for (const phase of ADM_PHASES) {
           markdown += `### ${phase}\n\n`;
-          const phaseArtifacts = artifacts.filter(a => a.phase === phase);
+          const phaseArtifacts = artifacts.filter(a => a.admPhase === phase);
           if (phaseArtifacts.length > 0) {
             phaseArtifacts.forEach(artifact => {
               markdown += `#### ${artifact.name} (${artifact.type})\n`;

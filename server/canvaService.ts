@@ -41,11 +41,11 @@ export async function generatePresentationFromArtifact(
   artifact: Artifact,
   projectName: string
 ): Promise<{ candidateId: string; designId?: string }> {
-  const content = artifact.generatedContent || artifact.content || '';
+  const content = artifact.content || artifact.content || '';
   
   // Generate design using Canva AI
   const prompt = `Create a professional TOGAF enterprise architecture presentation for "${artifact.name}". 
-Phase: ${artifact.phase}
+Phase: ${artifact.admPhase}
 Type: ${artifact.type}
 Project: ${projectName}
 
@@ -188,14 +188,14 @@ export async function createPresentationDeck(
 ): Promise<{ designId: string; editUrl: string; viewUrl: string }> {
   // Combine all artifact content
   const combinedContent = artifacts.map(a => {
-    const content = a.generatedContent || a.content || '';
-    return `## ${a.name} (${a.phase})\n\n${content}\n\n---\n\n`;
+    const content = a.content || a.content || '';
+    return `## ${a.name} (${a.admPhase})\n\n${content}\n\n---\n\n`;
   }).join('');
 
   const prompt = `Create a comprehensive TOGAF enterprise architecture presentation deck for project "${projectName}".
 
 Include these sections:
-${artifacts.map((a, idx) => `${idx + 1}. ${a.name} (${a.phase})`).join('\n')}
+${artifacts.map((a, idx) => `${idx + 1}. ${a.name} (${a.admPhase})`).join('\n')}
 
 Content:
 ${combinedContent.substring(0, 2000)}...

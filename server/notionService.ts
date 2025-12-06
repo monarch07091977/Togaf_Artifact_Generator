@@ -140,7 +140,7 @@ export async function createArtifactInNotion(
     id: projectNotionUrl
   });
 
-  const artifactContent = content || artifact.generatedContent || artifact.content || 'No content generated yet.';
+  const artifactContent = content || artifact.content || artifact.content || 'No content generated yet.';
 
   // Create artifact page as a child of the project page
   const artifactPage = await executeMCP('notion-create-pages', {
@@ -149,12 +149,12 @@ export async function createArtifactInNotion(
     },
     pages: [{
       properties: {
-        title: `${artifact.phase} - ${artifact.name}`
+        title: `${artifact.admPhase} - ${artifact.name}`
       },
       content: `# ${artifact.name}
 
 **Type:** ${artifact.type}
-**Phase:** ${artifact.phase}
+**Phase:** ${artifact.admPhase}
 **Status:** ${artifact.status}
 **Created:** ${new Date(artifact.createdAt).toLocaleDateString()}
 
@@ -181,14 +181,14 @@ export async function updateArtifactInNotion(
   artifact: Artifact,
   content?: string
 ): Promise<void> {
-  const artifactContent = content || artifact.generatedContent || artifact.content || 'No content generated yet.';
+  const artifactContent = content || artifact.content || artifact.content || 'No content generated yet.';
 
   await executeMCP('notion-update-page', {
     id: notionUrl,
     content: `# ${artifact.name}
 
 **Type:** ${artifact.type}
-**Phase:** ${artifact.phase}
+**Phase:** ${artifact.admPhase}
 **Status:** ${artifact.status}
 **Updated:** ${new Date(artifact.updatedAt).toLocaleDateString()}
 
@@ -275,14 +275,14 @@ export async function addArtifactToDatabase(
       properties: {
         "Artifact Name": artifact.name,
         "Type": artifact.type,
-        "Phase": artifact.phase,
+        "Phase": artifact.admPhase,
         "Status": artifact.status,
         "date:Created Date:start": artifact.createdAt.toISOString().split('T')[0],
         "date:Created Date:is_datetime": 0,
         "date:Updated Date:start": artifact.updatedAt.toISOString().split('T')[0],
         "date:Updated Date:is_datetime": 0
       },
-      content: artifact.generatedContent || artifact.content || 'No content yet.'
+      content: artifact.content || artifact.content || 'No content yet.'
     }]
   });
 

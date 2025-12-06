@@ -90,7 +90,7 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // TOGAF Project queries
-import { projects, artifacts, artifactRelationships, questionnaireResponses, assumptions, deliverables, Project, Artifact, ArtifactRelationship, QuestionnaireResponse, Assumption, Deliverable, InsertProject, InsertArtifact, InsertArtifactRelationship, InsertQuestionnaireResponse, InsertAssumption, InsertDeliverable } from "../drizzle/schema";
+import { projects, artifacts, questionnaireResponses, assumptions, Project, Artifact, QuestionnaireResponse, Assumption, InsertProject, InsertArtifact, InsertQuestionnaireResponse, InsertAssumption } from "../drizzle/schema";
 import { desc, and } from "drizzle-orm";
 
 export async function createProject(data: Omit<InsertProject, "id" | "createdAt" | "updatedAt">) {
@@ -136,13 +136,13 @@ export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdA
 export async function getArtifactsByProjectId(projectId: number): Promise<Artifact[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(artifacts).where(eq(artifacts.projectId, projectId)).orderBy(artifacts.phase, artifacts.name);
+  return db.select().from(artifacts).where(eq(artifacts.projectId, projectId)).orderBy(artifacts.admPhase, artifacts.name);
 }
 
 export async function getArtifactsByPhase(projectId: number, phase: string): Promise<Artifact[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(artifacts).where(and(eq(artifacts.projectId, projectId), eq(artifacts.phase, phase)));
+  return db.select().from(artifacts).where(and(eq(artifacts.projectId, projectId), eq(artifacts.admPhase, phase)));
 }
 
 export async function getArtifactById(id: number): Promise<Artifact | undefined> {
@@ -164,25 +164,9 @@ export async function deleteArtifact(id: number) {
   await db.delete(artifacts).where(eq(artifacts.id, id));
 }
 
-// Artifact Relationship queries
-export async function createArtifactRelationship(data: Omit<InsertArtifactRelationship, "id" | "createdAt">) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(artifactRelationships).values(data);
-  return Number(result[0].insertId);
-}
-
-export async function getArtifactDependencies(artifactId: number): Promise<ArtifactRelationship[]> {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(artifactRelationships).where(eq(artifactRelationships.targetArtifactId, artifactId));
-}
-
-export async function getArtifactDependents(artifactId: number): Promise<ArtifactRelationship[]> {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(artifactRelationships).where(eq(artifactRelationships.sourceArtifactId, artifactId));
-}
+// Artifact Relationship queries - DEPRECATED (old schema)
+// These functions reference tables that no longer exist in production schema
+// TODO: Implement using eaRelationships table if needed
 
 // Questionnaire Response queries
 export async function saveQuestionnaireResponse(data: Omit<InsertQuestionnaireResponse, "id" | "createdAt" | "updatedAt">) {
@@ -224,29 +208,5 @@ export async function updateAssumption(id: number, data: Partial<Omit<InsertAssu
   await db.update(assumptions).set(data).where(eq(assumptions.id, id));
 }
 
-// Deliverable queries
-export async function createDeliverable(data: Omit<InsertDeliverable, "id" | "createdAt" | "updatedAt">) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(deliverables).values(data);
-  return Number(result[0].insertId);
-}
-
-export async function getDeliverablesByProject(projectId: number): Promise<Deliverable[]> {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(deliverables).where(eq(deliverables.projectId, projectId)).orderBy(deliverables.phase);
-}
-
-export async function getDeliverableById(id: number): Promise<Deliverable | undefined> {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(deliverables).where(eq(deliverables.id, id)).limit(1);
-  return result[0];
-}
-
-export async function updateDeliverable(id: number, data: Partial<Omit<InsertDeliverable, "id" | "projectId">>) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.update(deliverables).set(data).where(eq(deliverables.id, id));
-}
+// Deliverable queries - DEPRECATED (old schema)
+// These functions reference tables that no longer exist in production schema

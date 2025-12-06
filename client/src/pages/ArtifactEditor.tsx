@@ -96,7 +96,7 @@ export default function ArtifactEditor() {
     {
       artifactId,
       artifactDefId: artifactDefId || "",
-      phase: artifact?.phase || "",
+      admPhase: artifact?.admPhase || "",
       projectId: artifact?.projectId || 0,
     },
     { enabled: !!artifact && !!artifactDefId }
@@ -140,7 +140,7 @@ export default function ArtifactEditor() {
     if (responses) {
       const answerMap: Record<string, string> = {};
       responses.forEach((r) => {
-        answerMap[r.questionId] = r.answer || "";
+        answerMap[r.question] = r.answer || "";
       });
       setAnswers(answerMap);
     } else if (autoPopulatedData?.data) {
@@ -158,10 +158,8 @@ export default function ArtifactEditor() {
   const handleSaveAnswer = async (questionId: string, questionText: string, answer: string) => {
     await saveResponse.mutateAsync({
       artifactId,
-      questionId,
-      questionText,
+      question: questionText,
       answer,
-      source: "user_input",
     });
   };
 
@@ -233,12 +231,12 @@ export default function ArtifactEditor() {
             <h1 className="text-3xl font-bold tracking-tight">{artifact.name}</h1>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline">{artifact.type}</Badge>
-              <Badge variant="outline">{artifact.phase}</Badge>
+              <Badge variant="outline">{artifact.admPhase}</Badge>
               <Badge
-                variant={artifact.status === "completed" ? "default" : "secondary"}
+                variant={(artifact.status ?? "draft") === "approved" ? "default" : "secondary"}
                 className="text-xs"
               >
-                {artifact.status.replace("_", " ")}
+                {(artifact.status ?? "draft").replace("_", " ")}
               </Badge>
             </div>
             {TOGAF_ARTIFACTS[artifact.type.toLowerCase().replace(/ /g, "-")] && (
@@ -341,7 +339,7 @@ export default function ArtifactEditor() {
                         
                         // Check if prerequisite is completed in current project
                         const isCompleted = projectArtifacts?.some(
-                          (a) => a.name === prereq.name && a.status === "completed"
+                          (a) => a.name === prereq.name && a.status === "approved"
                         );
                         
                         return (
@@ -481,9 +479,9 @@ export default function ArtifactEditor() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {artifact.generatedContent ? (
+              {artifact.content ? (
                 <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <Streamdown>{artifact.generatedContent}</Streamdown>
+                  <Streamdown>{artifact.content}</Streamdown>
                 </div>
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
@@ -512,19 +510,8 @@ export default function ArtifactEditor() {
                   {assumptions.map((assumption) => (
                     <Alert key={assumption.id}>
                       <AlertCircle className="h-4 w-4" />
-                      <AlertTitle className="flex items-center gap-2">
-                        {assumption.description}
-                        <Badge
-                          variant={
-                            assumption.impact === "high"
-                              ? "destructive"
-                              : assumption.impact === "medium"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {assumption.impact} impact
-                        </Badge>
+                      <AlertTitle>
+                        {assumption.assumption}
                       </AlertTitle>
                       {assumption.rationale && (
                         <AlertDescription className="mt-2">

@@ -1,14 +1,160 @@
 # TOGAF Artifact Generator - TODO
 
-## EA Meta-Model Implementation
+## EA Meta-Model Schema Refinements (Phase 1.x - Production-Ready)
+
+### Critical Priority (Implement Now - Production Readiness Fixes)
+- [x] Create detailed specification document for all schema changes
+- [x] Review and approve updated specification with production-ready fixes
+- [x] **FIX: Add projectId to relationship uniqueness constraint** (prevents cross-project ID collisions)
+- [x] **FIX: Optimize relationship indexes with projectId first** (align with real query patterns)
+- [x] **FIX: Add deletedAt to eaRelationships and artifactEntityLinks** (preserve history)
+- [x] **FIX: Add unique(projectId, normalizedName) to all entity tables** (prevent case-variant duplicates)
+- [x] **FIX: Add unique constraint to artifactEntityLinks** (prevent duplicate links)
+- [x] **IMPROVE: Simplify relationshipType enum and document allowed matrix**
+- [x] **OPTIONAL: Add externalKey to organizationUnits** (future org-level merge hint)
+- [x] **OPTIONAL: Add createdBy/createdVia to artifactEntityLinks** (AI traceability)
+- [x] Remove CASCADE deletes on entity→project FKs (conflicts with soft deletes)
+- [x] Convert VARCHAR pseudo-enums to real MySQL ENUMs (usageType, entityType, relationshipType)
+- [x] Add indexes for soft delete queries (projectId, deletedAt)
+- [x] Add indexes for relationship lookups (source/target entity lookups)
+- [x] Change TEXT to JSON type for metadata and suggestedData fields
+- [x] Add normalizedName column to all entity tables for org-scope preparation
+- [x] Add organizationUnits table for stakeholder organization FK
+
+### High Priority (Phase 1.5)
+- [ ] Add updatedBy field to entity tables for audit trails
+- [ ] Add unique email constraint on stakeholders per project
+- [ ] Implement service layer normalization logic for normalizedName
+- [ ] Implement relationship type validation matrix in service layer
+- [ ] Implement transaction support for multi-entity operations
+- [ ] Implement soft delete cascade logic (entities → relationships → links)
+
+### Medium Priority (Phase 2)
+- [ ] Migrate to organization-level scope
+- [ ] Implement full versioning system
+- [ ] Build graph visualization
+- [ ] Add advanced impact analysis
+
+---
+
+## Production-Ready Schema Refinements - Delta Changes
+
+### 1. Relationship Uniqueness Scope Fix
+**Problem:** Current unique constraint doesn't include projectId, causing cross-project ID collisions
+**Fix:** Include projectId in uniqueness key
+**Impact:** Prevents false duplicate detection across projects
+
+### 2. Relationship Index Optimization  
+**Problem:** Indexes don't match real query patterns (always filter by project first)
+**Fix:** Add projectId as leading column in all relationship indexes
+**Impact:** 10-100x query performance improvement
+
+### 3. Soft Delete for Relationships & Links
+**Problem:** No deletedAt on eaRelationships and artifactEntityLinks → lose history
+**Fix:** Add deletedAt + soft delete cascade logic
+**Impact:** Preserve complete EA history
+
+### 4. Normalized Name Uniqueness
+**Problem:** Only name is unique, not normalizedName → case variants can coexist
+**Fix:** Add unique(projectId, normalizedName) to all entity tables
+**Impact:** Strict deduplication, cleaner org-level migration
+
+### 5. Artifact Link Uniqueness
+**Problem:** Can insert duplicate artifact-entity links
+**Fix:** Add unique constraint on (artifactId, entityType, entityId, usageType)
+**Impact:** Data quality, prevents accidental duplicates
+
+### 6. Relationship Type Simplification
+**Problem:** Semantic overlap in relationshipType enum (PROVIDES_DATA_TO vs CONSUMES_DATA_FROM)
+**Fix:** Simplify to generic verbs + document allowed matrix
+**Impact:** Clearer semantics, easier to extend
+
+---
+
+## Previous TODO Items
+
+### EA Meta-Model Foundation (Phase 1 - Complete)
 - [x] Design core EA entity types (BusinessCapability, Application, Process, etc.)
 - [x] Define relationship types and cardinalities
 - [x] Create database schema for meta-model entities
 - [x] Create database schema for entity relationships
 - [x] Implement CRUD operations for meta-model entities
 - [x] Implement relationship management service
-- [ ] Create UI components for entity browser/selector
-- [ ] Create UI components for relationship visualization
-- [ ] Refactor artifact editor to reference model entities
-- [ ] Update AI service to generate structured model elements
-- [ ] Test meta-model integration end-to-end
+
+### EA Meta-Model Schema Improvements (Phase 1 - Complete)
+- [x] Add stakeholders table with proper entity relationships
+- [x] Replace owner VARCHAR fields with stakeholder FK relationships
+- [x] Add role/usageType to artifactEntityLinks table
+- [x] Add unique constraints on entity names per project
+- [x] Add deletedAt field for soft deletes on all entity tables
+
+### Deferred to Later Phases
+- [ ] Add indexes on (projectId, relationshipType) for performance (Phase 1.5)
+- [ ] Implement AI suggestion workflow with confidence scoring (Phase 1.5)
+- [ ] Build entity browser UI with search/filter (Phase 1.5)
+- [ ] Implement entity deduplication logic (Phase 1.5)
+- [ ] Add organization-level scope model (Phase 2)
+- [ ] Build graph visualization (Phase 2)
+- [ ] Implement full versioning system (Phase 2)
+
+---
+
+## Application Features
+
+### TOGAF-Based Questionnaire Improvements
+- [x] Review TOGAF standard documentation (Parts 0-5) for artifact requirements
+- [x] Extract artifact-specific questions from TOGAF documentation
+- [x] Update questionnaire system to use TOGAF-based questions for each artifact type
+- [x] Create mapping between artifact types and their specific questionnaire templates
+- [x] Test questionnaires generate relevant content for artifacts
+
+### Artifact Dropdown Filtering
+- [x] Filter artifact dropdown to show only artifacts for the selected ADM phase
+- [x] Exclude already-created artifacts from the dropdown
+- [x] Update UI to show "All artifacts created" message when phase is complete
+- [x] Test dropdown filtering works correctly across all phases
+
+### Fix tRPC Errors (Artifact Routing)
+- [x] Investigate server logs for errors when accessing artifact ID 30002
+- [x] Identify which tRPC procedures are failing
+- [x] Fix routing configuration - artifact route was /artifacts/:id but URL was /projects/:projectId/artifacts/:artifactId
+
+### Fix Artifact Export Functionality
+- [x] Investigate why manus-md-to-pdf command is not found
+- [x] Fix PDF export functionality
+- [x] Fix Word export functionality
+- [x] Test PDF export downloads correctly
+- [x] Test Word export downloads correctly
+
+### Implement Alternative PDF Generation
+- [x] Check if manus-md-to-pdf is available in deployment environment
+- [x] Install and configure puppeteer for PDF generation
+- [x] Update export service to use Node.js-based PDF generation with puppeteer
+- [x] Test PDF generation works in all environments - Successfully tested with puppeteer
+
+### Fix Chromium Path Detection for Production
+- [x] Update Chromium path to check multiple possible locations (/home/ubuntu, /root, system paths)
+- [x] Use existsSync to verify Chrome executable exists before launching
+- [x] Add fallback to puppeteer.executablePath() if custom path not found
+- [ ] Test PDF export in production environment
+
+---
+
+## Project Management
+
+### Completed Features
+- [x] Basic project CRUD operations
+- [x] Artifact creation and management
+- [x] AI-powered artifact generation
+- [x] Questionnaire system
+- [x] Project metadata editing
+- [x] TOGAF-compliant questionnaire generation
+- [x] Artifact dropdown filtering by phase
+- [x] PDF/Word export functionality
+- [x] Routing fixes for artifact pages
+- [x] EA meta-model foundation
+- [x] Schema improvements (stakeholders, soft deletes, unique constraints)
+
+### Known Issues
+- [ ] OAuth redirect URI configuration for preview URLs (platform issue)
+- [ ] PDF export in deployed environment (Chromium path resolution)

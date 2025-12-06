@@ -130,7 +130,7 @@ export default function ProjectDetail() {
       projectId,
       type: artifactDef.type,
       name: artifactDef.name,
-      phase: selectedPhase,
+      admPhase: selectedPhase,
     });
   };
 
@@ -158,7 +158,7 @@ export default function ProjectDetail() {
     );
   }
 
-  const phaseArtifacts = artifacts?.filter((a) => a.phase === selectedPhase) || [];
+  const phaseArtifacts = artifacts?.filter((a) => a.admPhase === selectedPhase) || [];
   // Get all artifacts for the phase, then filter out ones that are already created
   const allPhaseArtifacts = getArtifactsByPhase(selectedPhase as any);
   const createdArtifactTypes = new Set(phaseArtifacts.map(a => a.type));
@@ -234,7 +234,7 @@ export default function ProjectDetail() {
         <div className="overflow-x-auto">
           <TabsList className="inline-flex w-auto">
             {ADM_PHASES.map((phase) => {
-              const count = artifacts?.filter((a) => a.phase === phase).length || 0;
+              const count = artifacts?.filter((a) => a.admPhase === phase).length || 0;
               return (
                 <TabsTrigger key={phase} value={phase} className="relative">
                   {phase}
@@ -387,14 +387,14 @@ export default function ProjectDetail() {
                             <div className="flex items-center gap-2 text-sm">
                               <span
                                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  artifact.status === "completed"
+                                  (artifact.status ?? "draft") === "approved"
                                     ? "bg-green-100 text-green-800"
-                                    : artifact.status === "in_progress"
+                                    : (artifact.status ?? "draft") === "in_progress"
                                     ? "bg-blue-100 text-blue-800"
                                     : "bg-gray-100 text-gray-800"
                                 }`}
                               >
-                                {artifact.status.replace("_", " ")}
+                                {artifact.status ?? "draft".replace("_", " ")}
                               </span>
                             </div>
                           </div>

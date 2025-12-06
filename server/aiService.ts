@@ -33,13 +33,13 @@ export async function generateArtifact(
 
   // Build context from questionnaire responses
   const questionnaireContext = input.questionnaireResponses
-    .map((r) => `**${r.questionText}**\n${r.answer}`)
+    .map((r) => `**${r.question}**\n${r.answer}`)
     .join("\n\n");
 
   // Build context from related artifacts
   const relatedContext = input.relatedArtifacts
     ?.map((a) => {
-      return `### ${a.name}\n${a.generatedContent || a.content || "No content available"}`;
+      return `### ${a.name}\n${a.content || a.content || "No content available"}`;
     })
     .join("\n\n") || "No related artifacts available yet.";
 
@@ -123,7 +123,7 @@ export async function provideDomainExpertise(
   question: string,
   context: {
     artifactName: string;
-    phase: string;
+    admPhase: string;
     projectDescription?: string;
   }
 ): Promise<string> {
@@ -133,7 +133,7 @@ export async function provideDomainExpertise(
 
 **Context:**
 - Artifact: ${context.artifactName}
-- ADM Phase: ${context.phase}
+- ADM Phase: ${context.admPhase}
 ${context.projectDescription ? `- Project: ${context.projectDescription}` : ""}
 
 Provide:
@@ -180,7 +180,7 @@ export async function generateQuestionSuggestions(
     : "No previous answers";
 
   const relatedContext = context.relatedArtifacts
-    ?.map((a) => `${a.name}: ${a.generatedContent?.substring(0, 200)}...`)
+    ?.map((a) => `${a.name}: ${a.content?.substring(0, 200)}...`)
     .join("\n") || "No related artifacts";
 
   const prompt = `Generate 3 relevant suggestions for the following question in a TOGAF artifact questionnaire.

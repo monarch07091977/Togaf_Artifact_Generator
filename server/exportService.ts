@@ -37,12 +37,12 @@ const execAsync = promisify(exec);
  * Export artifact to Markdown format
  */
 export async function exportToMarkdown(artifact: Artifact, project: Project): Promise<string> {
-  const content = artifact.generatedContent || artifact.content || 'No content available';
+  const content = artifact.content || artifact.content || 'No content available';
   
   const markdown = `# ${artifact.name}
 
 **Project:** ${project.name}  
-**Phase:** ${artifact.phase}  
+**Phase:** ${artifact.admPhase}  
 **Type:** ${artifact.type}  
 **Status:** ${artifact.status}  
 **Created:** ${new Date(artifact.createdAt).toLocaleDateString()}  
@@ -199,10 +199,10 @@ export async function exportDeliverable(
 ): Promise<string> {
   // Combine all artifacts into one document
   const combinedContent = artifacts.map((artifact) => {
-    const content = artifact.generatedContent || artifact.content || 'No content available';
+    const content = artifact.content || artifact.content || 'No content available';
     return `# ${artifact.name}
 
-**Phase:** ${artifact.phase}  
+**Phase:** ${artifact.admPhase}  
 **Type:** ${artifact.type}  
 **Status:** ${artifact.status}
 
@@ -226,7 +226,7 @@ ${content}
 
 ## Table of Contents
 
-${artifacts.map((a, idx) => `${idx + 1}. ${a.name} (${a.phase})`).join('\n')}
+${artifacts.map((a, idx) => `${idx + 1}. ${a.name} (${a.admPhase})`).join('\n')}
 
 ---
 
@@ -396,7 +396,7 @@ export async function exportArtifactComplete(
   questionnaire: any[],
   assumptions: any[]
 ): Promise<string> {
-  const content = artifact.generatedContent || artifact.content || 'No content available';
+  const content = artifact.content || artifact.content || 'No content available';
   
   const questionnaireSection = questionnaire.length > 0 ? `
 ## Questionnaire Responses
@@ -419,7 +419,7 @@ ${assumptions.map((a, idx) => `
   const markdown = `# ${artifact.name}
 
 **Project:** ${project.name}  
-**Phase:** ${artifact.phase}  
+**Phase:** ${artifact.admPhase}  
 **Type:** ${artifact.type}  
 **Status:** ${artifact.status}  
 **Created:** ${new Date(artifact.createdAt).toLocaleDateString()}  
