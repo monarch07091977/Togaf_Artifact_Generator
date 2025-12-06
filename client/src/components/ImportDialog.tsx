@@ -7,7 +7,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import Papa from "papaparse";
-import { Upload, FileText, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { Upload, FileText, AlertCircle, CheckCircle2, XCircle, Download } from "lucide-react";
+import { downloadTemplate } from "@/lib/csvTemplates";
 
 interface ImportDialogProps {
   open: boolean;
@@ -127,6 +128,11 @@ export function ImportDialog({
     onOpenChange(false);
   };
 
+  const handleDownloadTemplate = () => {
+    downloadTemplate(entityType as any);
+    toast.success('Template downloaded successfully');
+  };
+
   const getEntityTypeLabel = () => {
     switch (entityType) {
       case 'businessCapability': return 'Business Capabilities';
@@ -191,6 +197,14 @@ export function ImportDialog({
                 </div>
               </AlertDescription>
             </Alert>
+
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Not sure about the format? Download a template with sample data.</p>
+              <Button variant="outline" size="sm" onClick={handleDownloadTemplate}>
+                <Download className="h-4 w-4 mr-2" />
+                Download Template
+              </Button>
+            </div>
 
             <div>
               <Label htmlFor="file">Select CSV File</Label>

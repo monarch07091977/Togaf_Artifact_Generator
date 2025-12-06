@@ -345,3 +345,24 @@
 - [x] Add "Import" button to EA Entity Browser
 - [x] Support import for all entity types
 - [x] Refresh list after successful import
+
+
+## CSV Template Downloads (Phase 1.11 - Completed)
+
+### Template Generation
+- [x] Create template generation utility function
+- [x] Define sample data for each entity type
+- [x] Generate CSV content with headers and examples
+- [x] Add download functionality
+
+### UI Integration
+- [x] Add "Download Template" button to ImportDialog
+- [x] Show template format in dialog
+- [x] Add help text explaining template usage
+
+### Templates
+- [x] Business Capability template (name, description, level)
+- [x] Application template (name, description, lifecycle)
+- [x] Business Process template (name, description)
+- [x] Data Entity template (name, description, sensitivity)
+- [x] Requirement template (name, description, type, priority)
