@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Building2, Boxes, GitBranch, Database, FileText, Network, List, Link } from "lucide-react";
+import { Search, Plus, Building2, Boxes, GitBranch, Database, FileText, Network, List, Link, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { EntityCreateDialog } from "@/components/EntityCreateDialog";
 import { EntityDetailDialog } from "@/components/EntityDetailDialog";
 import { RelationshipGraph } from "@/components/RelationshipGraph";
 import { RelationshipCreateDialog } from "@/components/RelationshipCreateDialog";
+import { ImportDialog } from "@/components/ImportDialog";
 
 type EntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
 
@@ -52,10 +53,11 @@ interface EntityListProps {
   projectId: number;
   entityType: EntityType;
   onCreateClick: () => void;
+  onImportClick: () => void;
   onEntityClick: (entity: any) => void;
 }
 
-function EntityList({ projectId, entityType, onCreateClick, onEntityClick }: EntityListProps) {
+function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEntityClick }: EntityListProps) {
   const [search, setSearch] = useState("");
   const config = ENTITY_CONFIG[entityType];
   const Icon = config.icon;
@@ -87,6 +89,10 @@ function EntityList({ projectId, entityType, onCreateClick, onEntityClick }: Ent
             className="pl-10"
           />
         </div>
+        <Button onClick={onImportClick} variant="outline">
+          <Upload className="h-4 w-4 mr-2" />
+          Import
+        </Button>
         <Button onClick={onCreateClick}>
           <Plus className="h-4 w-4 mr-2" />
           Create {config.label.slice(0, -1)}
@@ -221,6 +227,7 @@ export default function EAEntityBrowser() {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'graph'>('list');
   const [relationshipDialogOpen, setRelationshipDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   if (!projectId) {
     return (
@@ -238,6 +245,10 @@ export default function EAEntityBrowser() {
 
   const handleCreateClick = () => {
     setCreateDialogOpen(true);
+  };
+
+  const handleImportClick = () => {
+    setImportDialogOpen(true);
   };
 
   const handleCreateSuccess = () => {
@@ -318,6 +329,7 @@ export default function EAEntityBrowser() {
                   projectId={projectId}
                   entityType={type as EntityType}
                   onCreateClick={handleCreateClick}
+                  onImportClick={handleImportClick}
                   onEntityClick={handleEntityClick}
                 />
               ) : (
@@ -352,6 +364,16 @@ export default function EAEntityBrowser() {
         projectId={projectId}
         onSuccess={() => {
           // Refresh graph and list views
+        }}
+      />
+
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        projectId={projectId}
+        entityType={activeTab}
+        onSuccess={() => {
+          // Refresh list and graph views
         }}
       />
     </div>

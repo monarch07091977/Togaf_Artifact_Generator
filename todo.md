@@ -305,3 +305,43 @@
 - [x] Update list view after entity changes
 - [x] Update graph view after entity changes
 - [x] Show success/error messages
+
+
+## CSV/Excel Import (Phase 1.10 - Completed)
+
+### Backend
+- [x] Install CSV parsing library (papaparse)
+- [x] Create import endpoint for bulk entity creation
+- [x] Add validation for CSV format and required fields
+- [x] Add duplicate detection during import
+- [x] Return import results (success count, errors)
+- [ ] Add transaction support (all or nothing import) (future enhancement)
+
+### UI Components
+- [x] Create ImportDialog component
+- [x] Add file upload with drag-and-drop
+- [x] Add CSV preview table
+- [x] Add import progress indicator
+- [x] Add import results display
+- [ ] Add column mapping interface (future enhancement)
+
+### Features
+- [x] Upload CSV files
+- [x] Parse and validate CSV data
+- [x] Preview data before import
+- [x] Map CSV columns to entity fields (automatic)
+- [x] Bulk create entities with validation
+- [x] Show import progress
+- [x] Display success/error summary with row numbers
+- [ ] Download error report (future enhancement)
+
+### CSV Format
+- [x] Define CSV format requirements for each entity type
+- [x] Support common CSV formats (comma-delimited)
+- [x] Handle quoted fields and special characters
+- [ ] Provide downloadable CSV templates (future enhancement)
+
+### Integration
+- [x] Add "Import" button to EA Entity Browser
+- [x] Support import for all entity types
+- [x] Refresh list after successful import

@@ -580,4 +580,117 @@ export const eaEntityRouter = router({
 
       return { success: true };
     }),
+
+  // ============================================================================
+  // Bulk Import
+  // ============================================================================
+
+  bulkImport: protectedProcedure
+    .input(z.object({
+      projectId: z.number(),
+      entityType: z.enum(['businessCapability', 'application', 'businessProcess', 'dataEntity', 'requirement']),
+      entities: z.array(z.object({
+        name: z.string().min(1),
+        description: z.string().nullable().optional(),
+        level: z.number().min(1).max(5).optional(), // Business Capability
+        lifecycle: z.string().optional(), // Application
+        sensitivity: z.string().optional(), // Data Entity
+        type: z.string().optional(), // Requirement
+        priority: z.string().optional(), // Requirement
+      })),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const table = getTableMapping()[input.entityType];
+      const results = {
+        success: 0,
+        failed: 0,
+        errors: [] as Array<{ row: number; name: string; error: string }>,
+      };
+
+      // Process each entity
+      for (let i = 0; i < input.entities.length; i++) {
+        const entity = input.entities[i];
+        try {
+          const normalizedName = normalizeName(entity.name);
+
+          // Check for duplicates
+          const existing = await db.select()
+            .from(table)
+            .where(and(
+              eq(table.projectId, input.projectId),
+              eq(table.normalizedName, normalizedName),
+              isNull(table.deletedAt)
+            ))
+            .limit(1);
+
+          if (existing.length > 0) {
+            results.failed++;
+            results.errors.push({
+              row: i + 1,
+              name: entity.name,
+              error: `Duplicate name: "${entity.name}" already exists`,
+            });
+            continue;
+          }
+
+          // Prepare entity data
+          const entityData: any = {
+            projectId: input.projectId,
+            name: entity.name,
+            normalizedName,
+            description: entity.description || null,
+            createdBy: ctx.user.id,
+          };
+
+          // Add entity-specific fields
+          if (input.entityType === 'businessCapability') {
+            if (!entity.level) {
+              results.failed++;
+              results.errors.push({
+                row: i + 1,
+                name: entity.name,
+                error: 'Missing required field: level',
+              });
+              continue;
+            }
+            entityData.level = entity.level;
+          }
+          if (input.entityType === 'application' && entity.lifecycle) {
+            entityData.lifecycle = entity.lifecycle;
+          }
+          if (input.entityType === 'dataEntity' && entity.sensitivity) {
+            entityData.sensitivity = entity.sensitivity;
+          }
+          if (input.entityType === 'requirement') {
+            if (!entity.type) {
+              results.failed++;
+              results.errors.push({
+                row: i + 1,
+                name: entity.name,
+                error: 'Missing required field: type',
+              });
+              continue;
+            }
+            entityData.type = entity.type;
+            if (entity.priority) entityData.priority = entity.priority;
+          }
+
+          // Insert entity
+          await db.insert(table).values(entityData);
+          results.success++;
+        } catch (error: any) {
+          results.failed++;
+          results.errors.push({
+            row: i + 1,
+            name: entity.name,
+            error: error.message || 'Unknown error',
+          });
+        }
+      }
+
+      return results;
+    }),
 });
