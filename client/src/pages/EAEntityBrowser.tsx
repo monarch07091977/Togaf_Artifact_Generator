@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Building2, Boxes, GitBranch, Database, FileText } from "lucide-react";
+import { Search, Plus, Building2, Boxes, GitBranch, Database, FileText, Network, List } from "lucide-react";
 import { toast } from "sonner";
 import { EntityCreateDialog } from "@/components/EntityCreateDialog";
 import { EntityDetailDialog } from "@/components/EntityDetailDialog";
+import { RelationshipGraph } from "@/components/RelationshipGraph";
 
 type EntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
 
@@ -159,6 +160,57 @@ function EntityList({ projectId, entityType, onCreateClick, onEntityClick }: Ent
   );
 }
 
+interface GraphViewProps {
+  projectId: number;
+  onEntityClick: (entity: any) => void;
+}
+
+function GraphView({ projectId, onEntityClick }: GraphViewProps) {
+  // Fetch all entities across all types
+  const { data: businessCapabilities } = trpc.eaEntity.listEntities.useQuery({
+    projectId,
+    entityType: 'businessCapability',
+  });
+  const { data: applications } = trpc.eaEntity.listEntities.useQuery({
+    projectId,
+    entityType: 'application',
+  });
+  const { data: businessProcesses } = trpc.eaEntity.listEntities.useQuery({
+    projectId,
+    entityType: 'businessProcess',
+  });
+  const { data: dataEntities } = trpc.eaEntity.listEntities.useQuery({
+    projectId,
+    entityType: 'dataEntity',
+  });
+  const { data: requirements } = trpc.eaEntity.listEntities.useQuery({
+    projectId,
+    entityType: 'requirement',
+  });
+
+  // Fetch all relationships for the project
+  const { data: allRelationships } = trpc.eaEntity.listRelationships.useQuery({
+    projectId,
+  });
+
+  // Combine all entities
+  const allEntities = [
+    ...(businessCapabilities?.map((e: any) => ({ ...e, type: 'businessCapability' })) || []),
+    ...(applications?.map((e: any) => ({ ...e, type: 'application' })) || []),
+    ...(businessProcesses?.map((e: any) => ({ ...e, type: 'businessProcess' })) || []),
+    ...(dataEntities?.map((e: any) => ({ ...e, type: 'dataEntity' })) || []),
+    ...(requirements?.map((e: any) => ({ ...e, type: 'requirement' })) || []),
+  ];
+
+  return (
+    <RelationshipGraph
+      entities={allEntities}
+      relationships={allRelationships || []}
+      onNodeClick={onEntityClick}
+    />
+  );
+}
+
 export default function EAEntityBrowser() {
   const [, params] = useRoute("/projects/:projectId/ea-entities");
   const projectId = params?.projectId ? parseInt(params.projectId) : null;
@@ -166,6 +218,7 @@ export default function EAEntityBrowser() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'graph'>('list');
 
   if (!projectId) {
     return (
@@ -196,11 +249,31 @@ export default function EAEntityBrowser() {
 
   return (
     <div className="container py-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">EA Entity Browser</h1>
-        <p className="text-muted-foreground mt-2">
-          Browse and manage your Enterprise Architecture meta-model entities
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">EA Entity Browser</h1>
+          <p className="text-muted-foreground mt-2">
+            Browse and manage your Enterprise Architecture meta-model entities
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+          >
+            <List className="mr-2 h-4 w-4" />
+            List
+          </Button>
+          <Button
+            variant={viewMode === 'graph' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('graph')}
+          >
+            <Network className="mr-2 h-4 w-4" />
+            Graph
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as EntityType)}>
@@ -229,12 +302,19 @@ export default function EAEntityBrowser() {
                   <CardDescription>{config.description}</CardDescription>
                 </CardHeader>
               </Card>
-              <EntityList
-                projectId={projectId}
-                entityType={type as EntityType}
-                onCreateClick={handleCreateClick}
-                onEntityClick={handleEntityClick}
-              />
+              {viewMode === 'list' ? (
+                <EntityList
+                  projectId={projectId}
+                  entityType={type as EntityType}
+                  onCreateClick={handleCreateClick}
+                  onEntityClick={handleEntityClick}
+                />
+              ) : (
+                <GraphView
+                  projectId={projectId}
+                  onEntityClick={handleEntityClick}
+                />
+              )}
             </TabsContent>
           );
         })}
