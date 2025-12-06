@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 /**
  * All content in this page are only for example, replace with your own feature implementation
@@ -29,6 +30,11 @@ export default function Home() {
             <img src={APP_LOGO} alt={APP_TITLE} className="h-8 w-8" />
             <h1 className="text-xl font-bold">{APP_TITLE}</h1>
           </div>
+          {isAuthenticated && (
+            <div className="flex-1 max-w-md mx-8">
+              <GlobalSearch />
+            </div>
+          )}
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>

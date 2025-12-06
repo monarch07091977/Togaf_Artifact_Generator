@@ -13,6 +13,7 @@ import { EntityDetailDialog } from "@/components/EntityDetailDialog";
 import { RelationshipGraph } from "@/components/RelationshipGraph";
 import { RelationshipCreateDialog } from "@/components/RelationshipCreateDialog";
 import { ImportDialog } from "@/components/ImportDialog";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 type EntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
 
@@ -262,6 +263,11 @@ export default function EAEntityBrowser() {
 
   return (
     <div className="container py-8 space-y-6">
+      {/* Global Search */}
+      <div className="mb-6">
+        <GlobalSearch />
+      </div>
+      
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold">EA Entity Browser</h1>

@@ -839,4 +839,65 @@ export const eaEntityRouter = router({
         hasMore: events.length > input.offset + input.limit,
       };
     }),
+
+  /**
+   * Global search across all entity types
+   * Returns matching entities with type and project info
+   */
+  globalSearch: protectedProcedure
+    .input(z.object({
+      searchTerm: z.string().min(1),
+      limit: z.number().min(1).max(50).default(20),
+    }))
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+
+      const results: any[] = [];
+      const searchPattern = `%${input.searchTerm}%`;
+
+      // Helper to search in a table
+      const searchTable = async (table: any, entityType: string) => {
+        const entities = await db.select().from(table)
+          .where(
+            and(
+              or(
+                like(table.name, searchPattern),
+                like(table.description, searchPattern)
+              ),
+              isNull(table.deletedAt)
+            )
+          )
+          .limit(input.limit);
+
+        entities.forEach((entity: any) => {
+          results.push({
+            id: entity.id,
+            name: entity.name,
+            description: entity.description,
+            entityType,
+            projectId: entity.projectId,
+          });
+        });
+      };
+
+      // Search all entity tables
+      await searchTable(businessCapabilities, 'businessCapability');
+      await searchTable(applications, 'application');
+      await searchTable(businessProcesses, 'businessProcess');
+      await searchTable(dataEntities, 'dataEntity');
+      await searchTable(requirements, 'requirement');
+
+      // Sort by name relevance (exact match first, then contains)
+      results.sort((a, b) => {
+        const aExact = a.name.toLowerCase() === input.searchTerm.toLowerCase();
+        const bExact = b.name.toLowerCase() === input.searchTerm.toLowerCase();
+        if (aExact && !bExact) return -1;
+        if (!aExact && bExact) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      // Limit total results
+      return results.slice(0, input.limit);
+    }),
 });

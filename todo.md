@@ -397,3 +397,36 @@
 - [x] Add "Audit History" button to project detail page
 - [x] Add route in App.tsx
 - [ ] Link from entity detail dialogs (future enhancement)
+
+
+## Global Search (Phase 1.13 - Completed)
+
+### Backend
+- [x] Create global search query across all entity types
+- [x] Add fuzzy matching for entity names and descriptions
+- [x] Include entity type and project in results
+- [x] Limit results for autocomplete (20 items)
+- [x] Sort by relevance (exact match first)
+
+### UI Components
+- [x] Create GlobalSearch component with autocomplete
+- [x] Add search input with icon
+- [x] Create search results dropdown
+- [x] Add keyboard navigation (arrow keys, enter, escape)
+- [x] Add result highlighting for selected item
+
+### Features
+- [x] Search across all entity types
+- [x] Instant autocomplete results (min 2 characters)
+- [x] Navigate to entity detail on selection
+- [x] Show entity type badges in results
+- [x] Show entity description in results
+- [x] Clear search on selection
+- [x] Keyboard shortcuts (Cmd/Ctrl + K)
+- [x] Click outside to close dropdown
+
+### Integration
+- [x] Add GlobalSearch to Home page header
+- [x] Add GlobalSearch to Projects page
+- [x] Add GlobalSearch to EA Entity Browser page
+- [x] Make search accessible from all authenticated pages
