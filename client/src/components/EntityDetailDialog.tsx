@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { Network, ArrowRight, ArrowLeft, Trash2 } from "lucide-react";
+import { Network, ArrowRight, ArrowLeft, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { EntityEditDialog } from "./EntityEditDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,8 @@ export function EntityDetailDialog({
 }: EntityDetailDialogProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [relationshipToDelete, setRelationshipToDelete] = useState<any>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [entityDeleteDialogOpen, setEntityDeleteDialogOpen] = useState(false);
   const utils = trpc.useUtils();
 
   const { data: relationships, isLoading } = trpc.eaEntity.listRelationships.useQuery(
@@ -82,6 +85,26 @@ export function EntityDetailDialog({
     }
   };
 
+  const deleteEntity = trpc.eaEntity.deleteEntity.useMutation({
+    onSuccess: () => {
+      toast.success("Entity deleted successfully");
+      utils.eaEntity.listEntities.invalidate();
+      setEntityDeleteDialogOpen(false);
+      onOpenChange(false); // Close the detail dialog
+    },
+    onError: (error) => {
+      toast.error(`Failed to delete entity: ${error.message}`);
+    },
+  });
+
+  const handleEntityDelete = () => {
+    deleteEntity.mutate({
+      entityType: entityType as any,
+      entityId: entity.id,
+      projectId: entity.projectId,
+    });
+  };
+
   if (!entity) return null;
 
   const outgoingRelationships = relationships?.filter(
@@ -96,15 +119,38 @@ export function EntityDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{entity.name}</DialogTitle>
-          <DialogDescription>
-            {entityType === 'businessCapability' && 'Business Capability'}
-            {entityType === 'application' && 'Application'}
-            {entityType === 'businessProcess' && 'Business Process'}
-            {entityType === 'dataEntity' && 'Data Entity'}
-            {entityType === 'requirement' && 'Requirement'}
-            {' • ID: '}{entity.id}
-          </DialogDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <DialogTitle className="text-2xl">{entity.name}</DialogTitle>
+              <DialogDescription>
+                {entityType === 'businessCapability' && 'Business Capability'}
+                {entityType === 'application' && 'Application'}
+                {entityType === 'businessProcess' && 'Business Process'}
+                {entityType === 'dataEntity' && 'Data Entity'}
+                {entityType === 'requirement' && 'Requirement'}
+                {' • ID: '}{entity.id}
+              </DialogDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditDialogOpen(true)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEntityDeleteDialogOpen(true)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -278,6 +324,48 @@ export function EntityDetailDialog({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteRelationship.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <EntityEditDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        entity={entity}
+        entityType={entityType}
+        onSuccess={() => {
+          // Refresh entity data
+          utils.eaEntity.listEntities.invalidate();
+        }}
+      />
+
+      <AlertDialog open={entityDeleteDialogOpen} onOpenChange={setEntityDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Entity</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this entity? This action will also delete all relationships involving this entity. This cannot be undone.
+              <div className="mt-3 p-3 bg-muted rounded-md">
+                <p className="font-semibold text-foreground">{entity.name}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {entityType === 'businessCapability' && 'Business Capability'}
+                  {entityType === 'application' && 'Application'}
+                  {entityType === 'businessProcess' && 'Business Process'}
+                  {entityType === 'dataEntity' && 'Data Entity'}
+                  {entityType === 'requirement' && 'Requirement'}
+                  {' • ID: '}{entity.id}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEntityDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteEntity.isPending ? "Deleting..." : "Delete Entity"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

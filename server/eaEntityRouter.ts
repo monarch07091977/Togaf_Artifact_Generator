@@ -113,6 +113,19 @@ const relationshipSchema = z.object({
 type ImplementedEntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
 
 /**
+ * Helper function to get table mapping
+ */
+function getTableMapping() {
+  return {
+    businessCapability: businessCapabilities,
+    application: applications,
+    businessProcess: businessProcesses,
+    dataEntity: dataEntities,
+    requirement: requirements,
+  };
+}
+
+/**
  * Helper function to check for duplicate normalized names
  */
 async function checkDuplicateName(
@@ -452,6 +465,117 @@ export const eaEntityRouter = router({
         .where(and(
           eq(eaRelationships.id, input.id),
           eq(eaRelationships.projectId, input.projectId)
+        ));
+
+      return { success: true };
+    }),
+
+  // ============================================================================
+  // Entity Updates
+  // ============================================================================
+
+  updateEntity: protectedProcedure
+    .input(z.object({
+      entityType: z.enum(['businessCapability', 'application', 'businessProcess', 'dataEntity', 'requirement']),
+      entityId: z.number(),
+      projectId: z.number(),
+      data: z.object({
+        name: z.string().min(1).optional(),
+        description: z.string().nullable().optional(),
+        // Business Capability fields
+        level: z.number().min(1).max(5).optional(),
+        // Application fields
+        lifecycle: z.string().optional(),
+        // Data Entity fields
+        sensitivity: z.string().optional(),
+        // Requirement fields
+        type: z.string().optional(),
+        priority: z.string().optional(),
+      }),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const table = getTableMapping()[input.entityType];
+      const updateData: any = {
+        ...input.data,
+        updatedAt: new Date(),
+      };
+
+      // Generate normalized name if name is being updated
+      if (input.data.name) {
+        const normalizedName = normalizeName(input.data.name);
+        // Check for duplicates (excluding current entity)
+        const existing = await db.select()
+          .from(table)
+          .where(and(
+            eq(table.projectId, input.projectId),
+            eq(table.normalizedName, normalizedName),
+            isNull(table.deletedAt)
+          ))
+          .limit(1);
+        
+        if (existing.length > 0 && existing[0].id !== input.entityId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `An entity with name "${input.data.name}" already exists in this project`,
+          });
+        }
+        updateData.normalizedName = normalizedName;
+      }
+
+      await db.update(table)
+        .set(updateData)
+        .where(and(
+          eq(table.id, input.entityId),
+          eq(table.projectId, input.projectId)
+        ));
+
+      return { success: true };
+    }),
+
+  deleteEntity: protectedProcedure
+    .input(z.object({
+      entityType: z.enum(['businessCapability', 'application', 'businessProcess', 'dataEntity', 'requirement']),
+      entityId: z.number(),
+      projectId: z.number(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      const table = getTableMapping()[input.entityType];
+
+      // Soft delete the entity
+      await db.update(table)
+        .set({ 
+          deletedAt: new Date(),
+          deletedBy: ctx.user.id,
+        })
+        .where(and(
+          eq(table.id, input.entityId),
+          eq(table.projectId, input.projectId)
+        ));
+
+      // Also soft delete all relationships involving this entity
+      await db.update(eaRelationships)
+        .set({ 
+          deletedAt: new Date(),
+          deletedBy: ctx.user.id,
+        })
+        .where(and(
+          eq(eaRelationships.projectId, input.projectId),
+          or(
+            and(
+              eq(eaRelationships.sourceEntityType, input.entityType),
+              eq(eaRelationships.sourceEntityId, input.entityId)
+            ),
+            and(
+              eq(eaRelationships.targetEntityType, input.entityType),
+              eq(eaRelationships.targetEntityId, input.entityId)
+            )
+          )
         ));
 
       return { success: true };

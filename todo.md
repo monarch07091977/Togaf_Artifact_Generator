@@ -273,3 +273,35 @@
 - [x] Add relationship delete actions to entity detail dialog
 - [x] Update graph view after relationship changes
 - [x] Update list view after relationship changes
+
+
+## Entity Editing and Deletion (Phase 1.9 - Completed)
+
+### Backend
+- [x] Add updateEntity mutation for all entity types
+- [x] Add deleteEntity mutation (soft delete)
+- [x] Add validation for entity updates
+- [x] Add audit trail for entity changes (updatedBy, updatedAt)
+- [x] Cascade delete relationships when entity is deleted
+
+### UI Components
+- [x] Create EntityEditDialog component
+- [x] Add entity-specific form fields based on type
+- [x] Add validation for required fields
+- [x] Add delete confirmation dialog
+- [x] Add edit and delete buttons to entity detail dialog
+
+### Features
+- [x] Edit entity properties (name, description, etc.)
+- [x] Update entity-specific fields (level, lifecycle, priority, etc.)
+- [x] Validate required fields before saving
+- [x] Soft delete entities with confirmation
+- [x] Automatic normalizedName generation on name change
+- [x] Duplicate name checking during update
+
+### Integration
+- [x] Add "Edit" button to entity detail dialog
+- [x] Add "Delete" button to entity detail dialog
+- [x] Update list view after entity changes
+- [x] Update graph view after entity changes
+- [x] Show success/error messages
