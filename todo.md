@@ -532,3 +532,158 @@
 - [x] Pass filters to listEntities query
 - [ ] Persist filter state in URL query params (future enhancement)
 - [ ] Auto-load default view on page open (future enhancement)
+
+
+## Relationship Validation Rules Engine (Phase 1.16 - Completed)
+
+### Database Schema
+- [x] Create validationRules table (id, projectId, name, description, ruleType, config JSON, severity, isActive)
+- [x] Create validationViolations table (id, ruleId, projectId, entityType, entityId, violationDetails JSON, status, resolvedAt)
+- [x] Add indexes for efficient rule lookups and violation queries
+
+### Rule Types
+- [x] Minimum relationship count (e.g., "Business Capability must have at least 1 Application")
+- [x] Maximum relationship count (e.g., "Application should not exceed 10 Business Processes")
+- [x] Required relationship type (e.g., "Requirement must be traced to at least one entity")
+- [x] Circular dependency detection
+- [x] Orphaned entity detection (no relationships)
+- [x] Naming convention validation
+- [x] Attribute completeness check (required fields populated)
+
+### Backend API
+- [x] Create validationRules router with CRUD operations
+- [x] Add createRule mutation
+- [x] Add listRules query (project-scoped)
+- [x] Add updateRule mutation
+- [x] Add deleteRule mutation
+- [x] Add toggleRuleActive mutation
+- [x] Create validation engine service
+- [x] Add runValidation mutation (execute all active rules)
+- [x] Add getViolations query (with filters by status, rule, entity type, severity)
+- [x] Add resolveViolation mutation
+- [x] Add generateFixSuggestions mutation (AI-powered suggestions)
+
+### AI-Powered Fixes
+- [x] Integrate LLM for fix suggestions
+- [x] Generate contextual recommendations with title, description, rationale
+- [x] Include effort and impact assessment for each suggestion
+- [x] Follow TOGAF 10 ADM best practices in recommendations
+- [ ] Suggest missing relationships based on entity names/descriptions (future enhancement)
+- [ ] Batch fix suggestions for multiple violations (future enhancement)
+
+### UI Components
+- [x] Create ValidationDashboard page component
+- [x] Create ViolationsPanel with tabs (violations/rules)
+- [x] Create ViolationCard with details (entity, rule, severity, suggestions)
+- [x] Add severity indicators with icons (info, warning, error, critical)
+- [x] Add "Run Validation" button in dashboard header
+- [x] Add Validation button to project navigation
+- [ ] Create RuleEditor dialog (future enhancement)
+- [ ] Create FixSuggestionDialog with AI recommendations (future enhancement)
+- [ ] Add validation status indicator to entity cards (future enhancement)
+
+### Features
+- [x] Run validation on-demand
+- [x] View violations with severity indicators
+- [x] View violation statistics (by status and severity)
+- [x] Filter violations by status, rule, entity type, severity
+- [x] Display violation details (message, expected, actual, suggestions)
+- [x] Show active rules count and total rules
+- [x] Show open/resolved/ignored violation counts
+- [ ] Configure validation rules per project (UI pending)
+- [ ] Enable/disable rules individually (UI pending)
+- [ ] Mark violations as resolved/ignored (UI pending)
+- [ ] Apply AI-suggested fixes with one click (UI pending)
+- [ ] Auto-run validation on entity/relationship changes (future enhancement)
+- [ ] Export violation report to CSV (future enhancement)
+
+---
+
+## Interactive Trend Charts (Phase 1.17 - Pending)
+
+### Dependencies
+- [ ] Install Chart.js or Recharts library
+- [ ] Install date-fns for date manipulation
+
+### Backend Queries
+- [ ] Add getEntityGrowthTrend query (daily/weekly/monthly counts)
+- [ ] Add getRelationshipGrowthTrend query
+- [ ] Add getContributorActivity query (entities created per user)
+- [ ] Add getEntityTypeDistributionOverTime query
+- [ ] Add getRelationshipVelocity query (relationships created per time period)
+
+### Chart Components
+- [ ] Create EntityGrowthChart (line chart)
+- [ ] Create RelationshipGrowthChart (area chart)
+- [ ] Create ContributorActivityChart (bar chart)
+- [ ] Create EntityDistributionChart (stacked area chart)
+- [ ] Create RelationshipVelocityChart (line chart with trend)
+
+### Dashboard Integration
+- [ ] Add "Trends" tab to Dashboard page
+- [ ] Add date range selector (last 7/30/90 days, custom range)
+- [ ] Add chart type selector (line/bar/area)
+- [ ] Add export chart to PNG button
+- [ ] Add export data to CSV button
+- [ ] Add drill-down on chart click (show entities for that date)
+
+### Features
+- [ ] Responsive charts that adapt to screen size
+- [ ] Hover tooltips with detailed data
+- [ ] Legend with toggle visibility
+- [ ] Zoom and pan on charts
+- [ ] Compare multiple time periods
+- [ ] Animated transitions
+- [ ] Loading skeletons during data fetch
+
+---
+
+## Bulk Operations & Batch Editing (Phase 1.18 - Pending)
+
+### Backend API
+- [ ] Add bulkDelete mutation (delete multiple entities)
+- [ ] Add bulkUpdate mutation (update common fields)
+- [ ] Add bulkCreateRelationships mutation
+- [ ] Add bulkDeleteRelationships mutation
+- [ ] Add transaction support for atomic operations
+- [ ] Add validation before bulk operations
+- [ ] Add undo/rollback capability
+
+### UI Components
+- [ ] Add checkbox column to entity list tables
+- [ ] Create BulkActionBar component (appears when items selected)
+- [ ] Create BulkEditDialog with field selectors
+- [ ] Create BulkRelationshipDialog
+- [ ] Add "Select All" checkbox in table header
+- [ ] Add selection count indicator
+
+### Bulk Operations
+- [ ] Select/deselect individual entities
+- [ ] Select all entities on current page
+- [ ] Select all entities matching current filter
+- [ ] Bulk delete with confirmation dialog
+- [ ] Bulk update maturity level
+- [ ] Bulk update lifecycle stage
+- [ ] Bulk update sensitivity level
+- [ ] Bulk update priority
+- [ ] Bulk update owner/stakeholder
+- [ ] Bulk create relationships (same type to multiple targets)
+- [ ] Bulk delete relationships
+
+### Features
+- [ ] Show selected count in action bar
+- [ ] Clear selection button
+- [ ] Preserve selection across pagination
+- [ ] Disable bulk actions when no items selected
+- [ ] Show progress indicator during bulk operations
+- [ ] Show success/error summary after operation
+- [ ] Undo last bulk operation (within session)
+- [ ] Export selected entities to CSV
+- [ ] Import and bulk create from CSV
+
+### Safety Features
+- [ ] Confirmation dialog for destructive operations
+- [ ] Preview changes before applying
+- [ ] Validation warnings for conflicting updates
+- [ ] Audit log for bulk operations
+- [ ] Limit bulk operation size (max 100 items)

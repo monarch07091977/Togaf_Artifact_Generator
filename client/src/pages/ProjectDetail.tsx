@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, Plus, FileText, Network, BarChart3, Trash2, Pencil, Database, History } from "lucide-react";
+import { ArrowLeft, Plus, FileText, Network, BarChart3, Trash2, Pencil, Database, History, ShieldCheck } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useLocation, useRoute } from "wouter";
 import { ADM_PHASES } from "../../../shared/togafArtifacts";
@@ -186,6 +186,13 @@ export default function ProjectDetail() {
             >
               <BarChart3 className="mr-2 h-4 w-4" />
               Dashboard
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setLocation(`/projects/${projectId}/validation`)}
+            >
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Validation
             </Button>
             <Button
               variant="outline"

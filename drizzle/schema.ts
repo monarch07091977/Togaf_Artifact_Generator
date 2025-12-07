@@ -564,6 +564,83 @@ export const savedViews = mysqlTable("savedViews", {
 export type SavedView = typeof savedViews.$inferSelect;
 export type InsertSavedView = typeof savedViews.$inferInsert;
 
+/**
+ * Validation Rules - Configurable business rules for EA repository quality
+ */
+export const validationRules = mysqlTable("validationRules", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  
+  // Rule type and configuration
+  ruleType: mysqlEnum("ruleType", [
+    "min_relationships",
+    "max_relationships",
+    "required_relationship",
+    "no_circular_dependencies",
+    "no_orphaned_entities",
+    "naming_convention",
+    "attribute_completeness"
+  ]).notNull(),
+  
+  config: json("config").notNull(), // Rule-specific configuration
+  
+  // Rule metadata
+  severity: mysqlEnum("severity", ["info", "warning", "error", "critical"]).default("warning").notNull(),
+  isActive: int("isActive").default(1).notNull(), // Boolean: 1 = active, 0 = disabled
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  projectIdx: index("validation_rules_project_idx").on(table.projectId),
+  activeIdx: index("validation_rules_active_idx").on(table.projectId, table.isActive),
+}));
+
+export type ValidationRule = typeof validationRules.$inferSelect;
+export type InsertValidationRule = typeof validationRules.$inferInsert;
+
+/**
+ * Validation Violations - Detected rule violations in EA repository
+ */
+export const validationViolations = mysqlTable("validationViolations", {
+  id: int("id").autoincrement().primaryKey(),
+  ruleId: int("ruleId").notNull().references(() => validationRules.id, { onDelete: "cascade" }),
+  projectId: int("projectId").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  
+  // Entity that violated the rule
+  entityType: mysqlEnum("entityType", [
+    "businessCapability",
+    "application",
+    "businessProcess",
+    "dataEntity",
+    "requirement"
+  ]).notNull(),
+  entityId: int("entityId").notNull(),
+  entityName: varchar("entityName", { length: 500 }).notNull(), // Cached for display
+  
+  // Violation details
+  violationDetails: json("violationDetails").notNull(), // { message, expected, actual, suggestions }
+  
+  // Resolution tracking
+  status: mysqlEnum("status", ["open", "resolved", "ignored"]).default("open").notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  resolvedBy: int("resolvedBy").references(() => users.id),
+  resolutionNotes: text("resolutionNotes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  ruleIdx: index("validation_violations_rule_idx").on(table.ruleId),
+  projectIdx: index("validation_violations_project_idx").on(table.projectId),
+  entityIdx: index("validation_violations_entity_idx").on(table.entityType, table.entityId),
+  statusIdx: index("validation_violations_status_idx").on(table.projectId, table.status),
+}));
+
+export type ValidationViolation = typeof validationViolations.$inferSelect;
+export type InsertValidationViolation = typeof validationViolations.$inferInsert;
+
 // ============================================================================
 // RELATIONS (for Drizzle ORM query builder)
 // ============================================================================
