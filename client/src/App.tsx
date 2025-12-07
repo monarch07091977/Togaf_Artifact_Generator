@@ -10,6 +10,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import ArtifactEditor from "./pages/ArtifactEditor";
 import EAEntityBrowser from "./pages/EAEntityBrowser";
 import AuditHistory from "./pages/AuditHistory";
+import Dashboard from "./pages/Dashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/projects/:projectId/artifacts/:artifactId" component={ArtifactEditor} />
       <Route path="/projects/:projectId/ea-entities" component={EAEntityBrowser} />
       <Route path="/projects/:projectId/audit-history" component={AuditHistory} />
+      <Route path="/projects/:projectId/dashboard" component={Dashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

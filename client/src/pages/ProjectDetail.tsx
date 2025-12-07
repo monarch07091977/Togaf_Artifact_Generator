@@ -182,6 +182,13 @@ export default function ProjectDetail() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
+              onClick={() => setLocation(`/projects/${projectId}/dashboard`)}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setLocation(`/projects/${projectId}/ea-entities`)}
             >
               <Database className="mr-2 h-4 w-4" />
