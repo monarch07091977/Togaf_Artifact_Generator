@@ -536,6 +536,34 @@ export const artifactEntityLinks = mysqlTable(
 export type ArtifactEntityLink = typeof artifactEntityLinks.$inferSelect;
 export type InsertArtifactEntityLink = typeof artifactEntityLinks.$inferInsert;
 
+/**
+ * Saved Views - User-defined filter combinations for EA Entity Browser
+ */
+export const savedViews = mysqlTable("savedViews", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectId: int("projectId").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  
+  // Filter configuration stored as JSON
+  filters: json("filters").notNull(), // { entityTypes: [], maturityLevels: [], lifecycleStages: [], etc. }
+  
+  // View settings
+  isDefault: int("isDefault").default(0).notNull(), // Boolean: 1 = default view for this user+project
+  isShared: int("isShared").default(0).notNull(), // Boolean: 1 = visible to all project members
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userProjectIdx: index("saved_views_user_project_idx").on(table.userId, table.projectId),
+  projectSharedIdx: index("saved_views_project_shared_idx").on(table.projectId, table.isShared),
+  uniqueName: unique("saved_views_name_unique").on(table.userId, table.projectId, table.name),
+}));
+
+export type SavedView = typeof savedViews.$inferSelect;
+export type InsertSavedView = typeof savedViews.$inferInsert;
+
 // ============================================================================
 // RELATIONS (for Drizzle ORM query builder)
 // ============================================================================

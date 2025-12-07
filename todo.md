@@ -468,3 +468,67 @@
 - [ ] Add refresh/reload functionality (future enhancement)
 - [ ] Add date range filters (future enhancement)
 - [ ] Add export analytics data option (future enhancement)
+
+
+## Advanced Filtering & Saved Views (Phase 1.15 - Completed)
+
+### Database Schema
+- [x] Create savedViews table (id, userId, projectId, name, description, filters JSON, isDefault, isShared)
+- [x] Add indexes for efficient view lookups (user+project, project+shared, unique name)
+- [x] Create table via SQL directly
+
+### Backend Filter Queries
+- [x] Extend listEntities query with filter parameters
+- [x] Add filter by maturity level (businessCapabilities)
+- [x] Add filter by lifecycle stage (applications)
+- [x] Add filter by sensitivity (dataEntities)
+- [x] Add filter by priority (requirements)
+- [x] Add filter by requirement type (requirements)
+- [x] Add filter by date range (createdAt, updatedAt)
+- [x] Add filter by creator (createdBy)
+- [x] Combine multiple filters with AND logic
+
+### Saved Views API
+- [x] Create savedViews router with full CRUD
+- [x] Add createView mutation
+- [x] Add listViews query (user's views + shared views)
+- [x] Add getView query with access control
+- [x] Add updateView mutation (owner only)
+- [x] Add deleteView mutation (owner only)
+- [x] Add setDefaultView mutation
+- [x] Share views via isShared flag in create/update
+
+### UI Components
+- [x] Create FilterPanel component with collapsible sections
+- [x] Create filter controls for each entity-specific field (checkboxes)
+- [x] Create active filter badges display with remove buttons
+- [x] Create "Clear All Filters" button
+- [x] Create SavedViewsDropdown component
+- [x] Integrated save/edit/delete dialogs in dropdown
+- [x] Show default view indicator (star icon)
+- [x] Show shared view indicator (share icon)
+
+### Features
+- [x] Apply filters to entity list in real-time
+- [x] Show filter count indicator badge
+- [x] Save current filters as named view
+- [x] Load saved view and apply filters
+- [x] Set default view (star button)
+- [x] Share views with team (checkbox in save dialog)
+- [x] Edit saved view (rename, description, settings)
+- [x] Delete saved view with confirmation
+- [x] Filter by maturity levels (5 options)
+- [x] Filter by lifecycle stages (5 options)
+- [x] Filter by sensitivity levels (4 options)
+- [x] Filter by priorities (4 options)
+- [x] Filter by requirement types (4 options)
+- [ ] Date range picker (future enhancement)
+- [ ] Export filtered results to CSV (future enhancement)
+
+### Integration
+- [x] Add FilterPanel to EA Entity Browser
+- [x] Add SavedViewsDropdown to entity list header
+- [x] Register savedViews router in main routers
+- [x] Pass filters to listEntities query
+- [ ] Persist filter state in URL query params (future enhancement)
+- [ ] Auto-load default view on page open (future enhancement)

@@ -14,6 +14,8 @@ import { RelationshipGraph } from "@/components/RelationshipGraph";
 import { RelationshipCreateDialog } from "@/components/RelationshipCreateDialog";
 import { ImportDialog } from "@/components/ImportDialog";
 import { GlobalSearch } from "@/components/GlobalSearch";
+import FilterPanel, { type FilterConfig } from "@/components/FilterPanel";
+import SavedViewsDropdown from "@/components/SavedViewsDropdown";
 
 type EntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
 
@@ -60,14 +62,23 @@ interface EntityListProps {
 
 function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEntityClick }: EntityListProps) {
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<FilterConfig>({});
   const config = ENTITY_CONFIG[entityType];
   const Icon = config.icon;
+
+  // Calculate active filter count
+  const activeFilterCount = Object.values(filters).filter(value => {
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'object' && value !== null) return Object.keys(value).length > 0;
+    return value !== undefined;
+  }).length;
 
   const { data: entities, isLoading } = trpc.eaEntity.listEntities.useQuery({
     projectId,
     entityType,
     search: search || undefined,
     limit: 50,
+    ...filters,
   });
 
   if (isLoading) {
@@ -90,6 +101,11 @@ function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEnt
             className="pl-10"
           />
         </div>
+        <SavedViewsDropdown
+          projectId={projectId}
+          currentFilters={filters}
+          onLoadView={(loadedFilters) => setFilters(loadedFilters)}
+        />
         <Button onClick={onImportClick} variant="outline">
           <Upload className="h-4 w-4 mr-2" />
           Import
@@ -99,6 +115,13 @@ function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEnt
           Create {config.label.slice(0, -1)}
         </Button>
       </div>
+
+      <FilterPanel
+        entityType={entityType}
+        filters={filters}
+        onFiltersChange={setFilters}
+        activeFilterCount={activeFilterCount}
+      />
 
       {entities && entities.length === 0 ? (
         <Card>

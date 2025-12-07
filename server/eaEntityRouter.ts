@@ -176,6 +176,17 @@ export const eaEntityRouter = router({
       search: z.string().optional(),
       limit: z.number().min(1).max(100).optional().default(50),
       offset: z.number().min(0).optional().default(0),
+      // Advanced filters
+      maturityLevels: z.array(z.string()).optional(), // For businessCapability
+      lifecycleStages: z.array(z.string()).optional(), // For application
+      sensitivityLevels: z.array(z.string()).optional(), // For dataEntity
+      priorities: z.array(z.string()).optional(), // For requirement
+      requirementTypes: z.array(z.string()).optional(), // For requirement
+      createdBy: z.number().optional(), // Filter by creator
+      dateRange: z.object({
+        start: z.string().datetime().optional(),
+        end: z.string().datetime().optional(),
+      }).optional(),
     }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -202,6 +213,42 @@ export const eaEntityRouter = router({
             like(table.description, searchPattern)
           )
         );
+      }
+
+      // Apply entity-specific filters
+      if (input.entityType === 'businessCapability' && input.maturityLevels && input.maturityLevels.length > 0) {
+        conditions.push(or(...input.maturityLevels.map(level => eq(table.maturityLevel, level))));
+      }
+
+      if (input.entityType === 'application' && input.lifecycleStages && input.lifecycleStages.length > 0) {
+        conditions.push(or(...input.lifecycleStages.map(stage => eq(table.lifecycle, stage))));
+      }
+
+      if (input.entityType === 'dataEntity' && input.sensitivityLevels && input.sensitivityLevels.length > 0) {
+        conditions.push(or(...input.sensitivityLevels.map(level => eq(table.sensitivity, level))));
+      }
+
+      if (input.entityType === 'requirement') {
+        if (input.priorities && input.priorities.length > 0) {
+          conditions.push(or(...input.priorities.map(priority => eq(table.priority, priority))));
+        }
+        if (input.requirementTypes && input.requirementTypes.length > 0) {
+          conditions.push(or(...input.requirementTypes.map(type => eq(table.type, type))));
+        }
+      }
+
+      // Common filters
+      if (input.createdBy) {
+        conditions.push(eq(table.createdBy, input.createdBy));
+      }
+
+      if (input.dateRange) {
+        if (input.dateRange.start) {
+          conditions.push(eq(table.createdAt, new Date(input.dateRange.start)));
+        }
+        if (input.dateRange.end) {
+          conditions.push(eq(table.createdAt, new Date(input.dateRange.end)));
+        }
       }
 
       const results = await db.select().from(table)
