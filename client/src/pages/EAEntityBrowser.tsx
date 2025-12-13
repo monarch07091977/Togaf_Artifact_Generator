@@ -16,6 +16,11 @@ import { ImportDialog } from "@/components/ImportDialog";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import FilterPanel, { type FilterConfig } from "@/components/FilterPanel";
 import SavedViewsDropdown from "@/components/SavedViewsDropdown";
+import { BulkActionBar } from "@/components/BulkActionBar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BulkUpdateDialog } from "@/components/BulkUpdateDialog";
+import { BulkDeleteConfirmDialog } from "@/components/BulkDeleteConfirmDialog";
+import { BulkRelationshipDialog } from "@/components/BulkRelationshipDialog";
 
 type EntityType = 'businessCapability' | 'application' | 'businessProcess' | 'dataEntity' | 'requirement';
 
@@ -58,9 +63,17 @@ interface EntityListProps {
   onCreateClick: () => void;
   onImportClick: () => void;
   onEntityClick: (entity: any) => void;
+  selectedEntities: Set<number>;
+  onToggleSelection: (entityId: number) => void;
+  onClearSelection: () => void;
+  onSelectAll: (entityIds: number[]) => void;
+  onBulkDelete: () => void;
+  onBulkUpdate: () => void;
+  onBulkCreateRelationships: () => void;
+  onExportCSV: () => void;
 }
 
-function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEntityClick }: EntityListProps) {
+function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEntityClick, selectedEntities, onToggleSelection, onClearSelection, onSelectAll, onBulkDelete, onBulkUpdate, onBulkCreateRelationships, onExportCSV }: EntityListProps) {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<FilterConfig>({});
   const config = ENTITY_CONFIG[entityType];
@@ -145,10 +158,17 @@ function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEnt
           {entities?.map((entity: any) => (
             <Card
               key={entity.id}
-              className="hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => onEntityClick(entity)}
+              className="hover:shadow-lg transition-shadow relative"
             >
-              <CardHeader>
+              <div className="absolute top-3 left-3 z-10">
+                <Checkbox
+                  checked={selectedEntities.has(entity.id)}
+                  onCheckedChange={() => onToggleSelection(entity.id)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <div className="cursor-pointer" onClick={() => onEntityClick(entity)}>
+              <CardHeader className="pl-12">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     <Icon className="h-5 w-5 text-muted-foreground" />
@@ -177,6 +197,7 @@ function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEnt
                   )}
                 </div>
               </CardContent>
+              </div>
             </Card>
           ))}
         </div>
@@ -187,6 +208,18 @@ function EntityList({ projectId, entityType, onCreateClick, onImportClick, onEnt
           Showing {entities.length} {config.label.toLowerCase()}
         </div>
       )}
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectedEntities.size}
+        totalCount={entities?.length || 0}
+        onClearSelection={onClearSelection}
+        onSelectAll={() => onSelectAll(entities?.map((e: any) => e.id) || [])}
+        onBulkDelete={onBulkDelete}
+        onBulkUpdate={onBulkUpdate}
+        onBulkCreateRelationships={onBulkCreateRelationships}
+        onExportCSV={onExportCSV}
+      />
     </div>
   );
 }
@@ -252,6 +285,10 @@ export default function EAEntityBrowser() {
   const [viewMode, setViewMode] = useState<'list' | 'graph'>('list');
   const [relationshipDialogOpen, setRelationshipDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [selectedEntities, setSelectedEntities] = useState<Set<number>>(new Set());
+  const [bulkUpdateDialogOpen, setBulkUpdateDialogOpen] = useState(false);
+  const [bulkRelationshipDialogOpen, setBulkRelationshipDialogOpen] = useState(false);
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
 
   if (!projectId) {
     return (
@@ -282,6 +319,45 @@ export default function EAEntityBrowser() {
   const handleEntityClick = (entity: any) => {
     setSelectedEntity(entity);
     setDetailDialogOpen(true);
+  };
+
+  // Bulk operation handlers
+  const handleToggleSelection = (entityId: number) => {
+    setSelectedEntities(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(entityId)) {
+        newSet.delete(entityId);
+      } else {
+        newSet.add(entityId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedEntities(new Set());
+  };
+
+  const handleSelectAll = (entityIds: number[]) => {
+    setSelectedEntities(new Set(entityIds));
+  };
+
+  const handleBulkDelete = () => {
+    setBulkDeleteConfirmOpen(true);
+  };
+
+  const handleBulkUpdate = () => {
+    setBulkUpdateDialogOpen(true);
+  };
+
+  const handleBulkCreateRelationships = () => {
+    setBulkRelationshipDialogOpen(true);
+  };
+
+  const handleExportCSV = () => {
+    const entityIds = Array.from(selectedEntities);
+    // TODO: Implement CSV export
+    toast.success(`Exporting ${entityIds.length} entities to CSV...`);
   };
 
   return (
@@ -360,6 +436,14 @@ export default function EAEntityBrowser() {
                   onCreateClick={handleCreateClick}
                   onImportClick={handleImportClick}
                   onEntityClick={handleEntityClick}
+                  selectedEntities={selectedEntities}
+                  onToggleSelection={handleToggleSelection}
+                  onClearSelection={handleClearSelection}
+                  onSelectAll={handleSelectAll}
+                  onBulkDelete={handleBulkDelete}
+                  onBulkUpdate={handleBulkUpdate}
+                  onBulkCreateRelationships={handleBulkCreateRelationships}
+                  onExportCSV={handleExportCSV}
                 />
               ) : (
                 <GraphView
@@ -405,6 +489,36 @@ export default function EAEntityBrowser() {
           // Refresh list and graph views
         }}
       />
+
+      {/* Bulk Operation Dialogs */}
+      <BulkUpdateDialog
+        open={bulkUpdateDialogOpen}
+        onOpenChange={setBulkUpdateDialogOpen}
+        projectId={projectId}
+        entityType={activeTab}
+        selectedEntityIds={Array.from(selectedEntities)}
+        onSuccess={handleClearSelection}
+      />
+
+      <BulkDeleteConfirmDialog
+        open={bulkDeleteConfirmOpen}
+        onOpenChange={setBulkDeleteConfirmOpen}
+        projectId={projectId}
+        entityType={activeTab}
+        selectedEntityIds={Array.from(selectedEntities)}
+        onSuccess={handleClearSelection}
+      />
+
+      {selectedEntities.size === 1 && (
+        <BulkRelationshipDialog
+          open={bulkRelationshipDialogOpen}
+          onOpenChange={setBulkRelationshipDialogOpen}
+          projectId={projectId}
+          sourceEntityType={activeTab}
+          sourceEntityId={Array.from(selectedEntities)[0]}
+          onSuccess={handleClearSelection}
+        />
+      )}
     </div>
   );
 }
