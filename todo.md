@@ -1063,3 +1063,54 @@
 - [ ] Test maturity calculation
 - [ ] Test narrative generation
 - [ ] Test complete assessment workflow
+
+
+## Capability Assessment UI (Phase 1.24 - Completed)
+
+### Assessment Wizard Components
+- [x] Create AssessmentWizard page component
+- [x] Create CapabilitySelectionStep component (Step 1)
+- [x] Create IndustryFilter component
+- [x] Create CapabilityCard component with selection
+- [x] Create QuestionAnsweringStep component (Step 2)
+- [x] Create LikertScaleQuestion component
+- [x] Create ResultsVisualizationStep component (Step 3)
+- [x] Create MaturityChart component (radar/bar chart)
+- [x] Create DimensionScoreCard component
+
+### Assessment Dashboard
+- [x] Create AssessmentDashboard page component
+- [x] Create AssessmentList component
+- [x] Create AssessmentCard component with status
+- [ ] Create MaturityHeatmap component (future enhancement)
+- [x] Add "Start Assessment" button to project navigation
+
+### Features
+- [x] Browse capabilities by industry (Oil & Gas, Chemical, Manufacturing, Public Sector, Enterprise Support)
+- [x] Search capabilities by name
+- [x] Select capability and create assessment
+- [x] Generate AI-powered questions (5-7 per capability)
+- [x] Answer questions with 5-point Likert scale
+- [x] Track progress (X of Y questions answered)
+- [x] Calculate maturity scores automatically
+- [x] Generate AI-powered narrative
+- [x] Visualize dimension scores with charts
+- [x] Show maturity level with color coding
+- [x] Display strengths, gaps, and recommendations
+- [x] View all assessments for a project
+- [x] Filter assessments by status/maturity level
+
+### Navigation
+- [x] Add route: /projects/:projectId/assessments
+- [x] Add route: /projects/:projectId/assessments/new
+- [x] Add route: /projects/:projectId/assessments/:assessmentId
+- [x] Add "Assessments" button to ProjectDetail header
+- [x] Add navigation from assessment list to assessment details
+
+### Charts and Visualization
+- [x] Install chart library (recharts)
+- [x] Create radar chart for dimension scores
+- [x] Create bar chart for dimension comparison
+- [x] Create maturity level indicator with color
+- [x] Create progress indicator for assessment completion
+- [x] Add tooltips and labels to charts

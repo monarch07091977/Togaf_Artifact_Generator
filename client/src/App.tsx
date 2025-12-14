@@ -13,6 +13,9 @@ import AuditHistory from "./pages/AuditHistory";
 import Dashboard from "./pages/Dashboard";
 import ValidationDashboard from "./pages/ValidationDashboard";
 import AIGenerationWizard from "./pages/AIGenerationWizard";
+import AssessmentDashboard from "./pages/AssessmentDashboard";
+import CapabilitySelection from "./pages/CapabilitySelection";
+import AssessmentDetail from "./pages/AssessmentDetail";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -27,6 +30,9 @@ function Router() {
       <Route path="/projects/:id/dashboard" component={Dashboard} />
       <Route path="/projects/:projectId/validation" component={ValidationDashboard} />
       <Route path="/projects/:projectId/ai-generate" component={AIGenerationWizard} />
+      <Route path="/projects/:projectId/assessments" component={AssessmentDashboard} />
+      <Route path="/projects/:projectId/assessments/new" component={CapabilitySelection} />
+      <Route path="/projects/:projectId/assessments/:assessmentId" component={AssessmentDetail} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
