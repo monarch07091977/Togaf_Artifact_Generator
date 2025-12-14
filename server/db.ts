@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -130,18 +130,25 @@ export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdA
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const now = new Date();
-  const result = await db.insert(artifacts).values({
-    projectId: data.projectId,
-    name: data.name,
-    type: data.type,
-    admPhase: data.admPhase,
-    description: data.description ?? null,
-    content: data.content ?? null,
-    status: data.status ?? "draft",
-    generatedAt: data.generatedAt ?? null,
-    createdAt: now,
-    updatedAt: now,
-  });
+  
+  // Use raw SQL to bypass Drizzle ORM issues
+  const result: any = await db.execute(
+    sql`INSERT INTO artifacts (
+      projectId, name, type, admPhase, description, content, status, generatedAt, createdAt, updatedAt
+    ) VALUES (
+      ${data.projectId},
+      ${data.name},
+      ${data.type},
+      ${data.admPhase},
+      ${data.description ?? null},
+      ${data.content ?? null},
+      ${data.status ?? "draft"},
+      ${data.generatedAt ?? null},
+      ${now},
+      ${now}
+    )`
+  );
+  
   return Number(result[0].insertId);
 }
 

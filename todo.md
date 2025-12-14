@@ -1119,9 +1119,9 @@
 ## Bug Fixes (Critical)
 
 ### Artifact Creation Error
-- [x] Fix database insert error when creating artifacts
-- [x] Issue: Column count mismatch - nullable fields not properly handled
-- [x] Root cause: Drizzle ORM spreading data with undefined values instead of explicit null
-- [x] Solution: Explicitly map each field and use nullish coalescing (??) for nullable fields
-- [x] Fixed fields: description, content, generatedAt (set to null if not provided)
-- [x] Server restarted and fix deployed
+- [x] Fix database insert error when creating artifacts (RAW SQL SOLUTION)
+- [x] Issue: Drizzle ORM consistently generating malformed SQL regardless of code changes
+- [x] Solution: Bypassed Drizzle insert() and used raw SQL with sql template tag
+- [x] Implementation: db.execute(sql`INSERT INTO artifacts...`) with parameterized values
+- [x] Modified: server/db.ts createArtifact function
+- [x] Modified: server/routers.ts artifacts.create mutation to explicitly pass fields
