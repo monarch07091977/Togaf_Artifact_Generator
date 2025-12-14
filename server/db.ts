@@ -131,7 +131,14 @@ export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdA
   if (!db) throw new Error("Database not available");
   const now = new Date();
   const result = await db.insert(artifacts).values({
-    ...data,
+    projectId: data.projectId,
+    name: data.name,
+    type: data.type,
+    admPhase: data.admPhase,
+    description: data.description ?? null,
+    content: data.content ?? null,
+    status: data.status ?? "draft",
+    generatedAt: data.generatedAt ?? null,
     createdAt: now,
     updatedAt: now,
   });

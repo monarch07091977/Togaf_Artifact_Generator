@@ -1120,6 +1120,8 @@
 
 ### Artifact Creation Error
 - [x] Fix database insert error when creating artifacts
-- [x] Issue: timestamp fields (generatedAt, createdAt, updatedAt) using 'default' instead of actual values
-- [x] Error: "Failed query: insert into `artifacts` values (default, ?, ?, ?, ?, default, default, ?, default, default, default)"
-- [x] Solution: Explicitly set timestamp values in artifact creation mutation
+- [x] Issue: Column count mismatch - nullable fields not properly handled
+- [x] Root cause: Drizzle ORM spreading data with undefined values instead of explicit null
+- [x] Solution: Explicitly map each field and use nullish coalescing (??) for nullable fields
+- [x] Fixed fields: description, content, generatedAt (set to null if not provided)
+- [x] Server restarted and fix deployed
