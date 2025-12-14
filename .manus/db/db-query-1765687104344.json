@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS assessmentQuestions (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  assessmentId INT NOT NULL,\n  catalogReferenceId VARCHAR(50),\n  questionId VARCHAR(100) NOT NULL,\n  dimensionCode ENUM('process','people','technology','data','governance') NOT NULL,\n  dimensionLabel VARCHAR(100) NOT NULL,\n  questionText TEXT NOT NULL,\n  answerScale JSON NOT NULL,\n  weight DECIMAL(3,2) NOT NULL,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  INDEX assessment_questions_assessment_idx (assessmentId),\n  INDEX assessment_questions_dimension_idx (assessmentId, dimensionCode),\n  FOREIGN KEY (assessmentId) REFERENCES capabilityAssessments(id) ON DELETE CASCADE\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user MCXikgkEWzjEGDB.4f9baeb9deaf --database fq5wr6YzXYEsLcWqw7mDwv --execute CREATE TABLE IF NOT EXISTS assessmentQuestions (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  assessmentId INT NOT NULL,\n  catalogReferenceId VARCHAR(50),\n  questionId VARCHAR(100) NOT NULL,\n  dimensionCode ENUM('process','people','technology','data','governance') NOT NULL,\n  dimensionLabel VARCHAR(100) NOT NULL,\n  questionText TEXT NOT NULL,\n  answerScale JSON NOT NULL,\n  weight DECIMAL(3,2) NOT NULL,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  INDEX assessment_questions_assessment_idx (assessmentId),\n  INDEX assessment_questions_dimension_idx (assessmentId, dimensionCode),\n  FOREIGN KEY (assessmentId) REFERENCES capabilityAssessments(id) ON DELETE CASCADE\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1961
+}

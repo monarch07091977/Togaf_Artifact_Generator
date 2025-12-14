@@ -1,6 +1,5 @@
 import { relations } from "drizzle-orm";
-import { index, int, json, mysqlEnum, mysqlTable, text, timestamp, unique, varchar } from "drizzle-orm/mysql-core";
-
+import { decimal, index, int, json, mysqlEnum, mysqlTable, text, timestamp, unique, varchar } from "drizzle-orm/mysql-core";
 // ============================================================================
 // ENUM DEFINITIONS (Real ENUMs instead of VARCHAR for data quality)
 // ============================================================================
@@ -640,6 +639,139 @@ export const validationViolations = mysqlTable("validationViolations", {
 
 export type ValidationViolation = typeof validationViolations.$inferSelect;
 export type InsertValidationViolation = typeof validationViolations.$inferInsert;
+
+/**
+ * Capability Catalog - Industry-specific standard business capabilities
+ */
+export const capabilityCatalog = mysqlTable("capabilityCatalog", {
+  id: int("id").autoincrement().primaryKey(),
+  industry: varchar("industry", { length: 100 }).notNull(), // Financial Services, Healthcare, Retail, etc.
+  referenceId: varchar("referenceId", { length: 50 }).notNull(), // e.g., "FS.BC.01", "HC.BC.02"
+  name: varchar("name", { length: 500 }).notNull(),
+  description: text("description").notNull(),
+  level: int("level").notNull(), // Hierarchy level (1 = top level, 2 = sub-capability, etc.)
+  parentReferenceId: varchar("parentReferenceId", { length: 50 }), // For hierarchical capabilities
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  industryIdx: index("capability_catalog_industry_idx").on(table.industry),
+  referenceIdx: index("capability_catalog_reference_idx").on(table.referenceId),
+  uniqueRef: unique("capability_catalog_unique_ref").on(table.industry, table.referenceId),
+}));
+
+export type CapabilityCatalogEntry = typeof capabilityCatalog.$inferSelect;
+export type InsertCapabilityCatalogEntry = typeof capabilityCatalog.$inferInsert;
+
+/**
+ * Maturity Model - Configuration for capability maturity assessment
+ */
+export const maturityModels = mysqlTable("maturityModels", {
+  id: int("id").autoincrement().primaryKey(),
+  modelId: varchar("modelId", { length: 50 }).notNull().unique(), // e.g., "TOGAF_5_LEVEL"
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description"),
+  levels: json("levels").notNull(), // Array of level definitions with code, label, description, color, icon
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MaturityModel = typeof maturityModels.$inferSelect;
+export type InsertMaturityModel = typeof maturityModels.$inferInsert;
+
+/**
+ * Capability Assessment - Maturity assessment results for project capabilities
+ */
+export const capabilityAssessments = mysqlTable("capabilityAssessments", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  capabilityId: int("capabilityId").notNull().references(() => businessCapabilities.id, { onDelete: "cascade" }),
+  catalogReferenceId: varchar("catalogReferenceId", { length: 50 }), // Link to catalog entry
+  
+  // Maturity scoring
+  maturityModelId: varchar("maturityModelId", { length: 50 }).notNull(),
+  maturityScore: decimal("maturityScore", { precision: 3, scale: 2 }), // e.g., 2.45
+  maturityLevel: mysqlEnum("maturityLevel", ["initial", "developing", "defined", "managed", "optimizing"]),
+  targetMaturityLevel: mysqlEnum("targetMaturityLevel", ["initial", "developing", "defined", "managed", "optimizing"]),
+  
+  // Dimension scores (JSON: { process: 2.5, people: 3.0, technology: 2.0, data: 2.5, governance: 3.0 })
+  dimensionScores: json("dimensionScores"),
+  
+  // AI-generated narrative and recommendations
+  maturityNarrative: text("maturityNarrative"),
+  keyStrengths: json("keyStrengths"), // Array of strings
+  keyGaps: json("keyGaps"), // Array of strings
+  recommendations: json("recommendations"), // Array of strings
+  
+  // Assessment metadata
+  assessmentCompletedAt: timestamp("assessmentCompletedAt"),
+  assessedBy: int("assessedBy").references(() => users.id),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  projectIdx: index("capability_assessments_project_idx").on(table.projectId),
+  capabilityIdx: index("capability_assessments_capability_idx").on(table.capabilityId),
+  uniqueAssessment: unique("capability_assessments_unique").on(table.projectId, table.capabilityId),
+}));
+
+export type CapabilityAssessment = typeof capabilityAssessments.$inferSelect;
+export type InsertCapabilityAssessment = typeof capabilityAssessments.$inferInsert;
+
+/**
+ * Assessment Questions - Questions for capability maturity assessment
+ */
+export const assessmentQuestions = mysqlTable("assessmentQuestions", {
+  id: int("id").autoincrement().primaryKey(),
+  assessmentId: int("assessmentId").notNull().references(() => capabilityAssessments.id, { onDelete: "cascade" }),
+  catalogReferenceId: varchar("catalogReferenceId", { length: 50 }), // Link to capability catalog
+  
+  // Question details
+  questionId: varchar("questionId", { length: 100 }).notNull(), // e.g., "FS.BC.01.Q1"
+  dimensionCode: mysqlEnum("dimensionCode", ["process", "people", "technology", "data", "governance"]).notNull(),
+  dimensionLabel: varchar("dimensionLabel", { length: 100 }).notNull(),
+  questionText: text("questionText").notNull(),
+  
+  // Answer scale (JSON: { type: "likert_5", options: ["1 - Never", ...] })
+  answerScale: json("answerScale").notNull(),
+  weight: decimal("weight", { precision: 3, scale: 2 }).notNull(), // Importance weight (0.0 - 1.0)
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  assessmentIdx: index("assessment_questions_assessment_idx").on(table.assessmentId),
+  dimensionIdx: index("assessment_questions_dimension_idx").on(table.assessmentId, table.dimensionCode),
+}));
+
+export type AssessmentQuestion = typeof assessmentQuestions.$inferSelect;
+export type InsertAssessmentQuestion = typeof assessmentQuestions.$inferInsert;
+
+/**
+ * Assessment Responses - User answers to assessment questions
+ */
+export const assessmentResponses = mysqlTable("assessmentResponses", {
+  id: int("id").autoincrement().primaryKey(),
+  assessmentId: int("assessmentId").notNull().references(() => capabilityAssessments.id, { onDelete: "cascade" }),
+  questionId: int("questionId").notNull().references(() => assessmentQuestions.id, { onDelete: "cascade" }),
+  
+  // Answer value (1-5 for Likert scale)
+  answerValue: int("answerValue").notNull(),
+  answerLabel: varchar("answerLabel", { length: 100 }), // e.g., "4 - Often"
+  
+  // Response metadata
+  answeredBy: int("answeredBy").notNull().references(() => users.id),
+  answeredAt: timestamp("answeredAt").defaultNow().notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  assessmentIdx: index("assessment_responses_assessment_idx").on(table.assessmentId),
+  questionIdx: index("assessment_responses_question_idx").on(table.questionId),
+  uniqueResponse: unique("assessment_responses_unique").on(table.assessmentId, table.questionId),
+}));
+
+export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
+export type InsertAssessmentResponse = typeof assessmentResponses.$inferInsert;
 
 // ============================================================================
 // RELATIONS (for Drizzle ORM query builder)

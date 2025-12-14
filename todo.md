@@ -855,3 +855,125 @@
 - [ ] Show generation history (future enhancement)
 - [ ] Allow re-generation with different parameters (future enhancement)
 
+
+
+## Industry-Specific Capability Maturity Assessment (Phase 1.21 - Partially Complete)
+
+### Capability Catalog Data Model
+- [x] Create capabilityCatalog table (industry, referenceId, name, description, level, parentReferenceId)
+- [x] Add indexes for efficient catalog lookups (industry, referenceId)
+- [x] Create maturityModels configuration table (modelId, levels with legends, colors, icons)
+- [x] Create capabilityAssessments table (projectId, capabilityId, maturityScore, maturityLevel, targetLevel)
+- [x] Create assessmentQuestions table (capabilityRefId, dimensionCode, text, answerScale, weight)
+- [x] Create assessmentResponses table (assessmentId, questionId, answerValue, answeredBy, answeredAt)
+
+### Industry Capability Catalogs
+- [x] Seed Oil & Gas capabilities (20 standard capabilities)
+- [x] Seed Chemical capabilities (21 standard capabilities)
+- [x] Seed Manufacturing capabilities (22 standard capabilities)
+- [x] Seed Public Sector capabilities (25 standard capabilities)
+- [x] Add industry-based reference IDs for traceability (OG.*, CH.*, MF.*, PS.*)
+- [x] Add capability hierarchy support (level and parentReferenceId fields)
+- [x] Total 88 capabilities seeded across 4 industries
+
+### Maturity Model Framework
+- [x] Define TOGAF 5-level maturity model config
+- [x] Level 1 - Initial (ad-hoc, unpredictable, color: #ef4444 red, icon: circle)
+- [x] Level 2 - Developing (some repeatability, color: #f97316 orange, icon: triangle)
+- [x] Level 3 - Defined (documented, standardized, color: #eab308 yellow, icon: square)
+- [x] Level 4 - Managed (measured, monitored, color: #84cc16 light green, icon: diamond)
+- [x] Level 5 - Optimizing (continuous improvement, color: #22c55e dark green, icon: star)
+- [x] Add characteristics for each maturity level (4 per level)
+- [x] Seed maturity model into database
+- [ ] Create maturity legend UI component (pending)
+- [ ] Add maturity level icons to UI (pending)
+
+### Capability Assessment Questions
+- [ ] Create AI service for generating assessment questions
+- [ ] Generate 3-7 questions per capability across dimensions
+- [ ] Dimension: Process & Governance questions
+- [ ] Dimension: People & Organization questions
+- [ ] Dimension: Technology & Tools questions
+- [ ] Dimension: Data & Information questions
+- [ ] Dimension: Measurement & Control questions
+- [ ] Use 1-5 Likert scale for all questions
+- [ ] Add question weighting by dimension importance
+- [ ] Store generated questions in database
+
+### Maturity Scoring Logic
+- [ ] Implement weighted average scoring algorithm
+- [ ] Map numeric scores to maturity levels (thresholds)
+- [ ] Calculate per-dimension scores (process, people, tech, data, governance)
+- [ ] Store maturity score and level in capabilityAssessment table
+- [ ] Add validation for answer completeness
+
+### AI-Powered Maturity Narrative
+- [ ] Create AI service for generating maturity narratives
+- [ ] Input: capability context, scores, maturity level, model definition
+- [ ] Generate maturity explanation text
+- [ ] Identify key strengths (what's working well)
+- [ ] Identify key gaps (what needs improvement)
+- [ ] Generate 3-5 actionable recommendations
+- [ ] Suggest target maturity level (typically +1 or +2 levels)
+- [ ] Add confidence scoring for recommendations
+
+### Backend API
+- [ ] Create capabilityCatalog router
+- [ ] Add getCapabilitiesByIndustry query
+- [ ] Add getMaturityModel query
+- [ ] Create capabilityAssessment router
+- [ ] Add generateAssessmentQuestions mutation
+- [ ] Add submitAssessmentAnswers mutation
+- [ ] Add calculateMaturityScore mutation
+- [ ] Add generateMaturityNarrative mutation
+- [ ] Add getAssessmentResults query
+
+### Wizard Flow Updates
+- [ ] Add Step 4a: Capability Selection (after project context)
+- [ ] Load standard capabilities from catalog by industry
+- [ ] Allow user to select/deselect capabilities for assessment
+- [ ] Add Step 5: Generate Assessment Questions
+- [ ] Display questions grouped by capability and dimension
+- [ ] Add Step 6: Answer Assessment Questions
+- [ ] Render 1-5 Likert scale UI for each question
+- [ ] Add progress indicator for question completion
+- [ ] Add Step 7: Calculate Maturity & Review Results
+- [ ] Display capability maturity matrix with color-coded levels
+- [ ] Show per-capability narratives and recommendations
+- [ ] Add Step 8: Commit (updated to include maturity data)
+
+### UI Components
+- [ ] Create CapabilitySelectionStep component
+- [ ] Create MaturityLegend component (with colors and icons)
+- [ ] Create AssessmentQuestionsStep component
+- [ ] Create LikertScaleInput component (1-5 radio buttons)
+- [ ] Create MaturityMatrixView component
+- [ ] Create CapabilityMaturityCard component
+- [ ] Create MaturityNarrativePanel component
+- [ ] Create RecommendationsPanel component
+
+### Database Schema Extensions
+- [ ] Extend businessCapabilities table with maturity fields
+- [ ] Add maturityModelId column
+- [ ] Add maturityScore column (decimal)
+- [ ] Add maturityLevel column (enum)
+- [ ] Add targetMaturityLevel column (enum)
+- [ ] Add maturityNarrative column (text)
+- [ ] Add recommendations column (JSON array)
+- [ ] Add assessmentCompletedAt timestamp
+
+### Integration
+- [ ] Update AI generation service to use capability catalog
+- [ ] Modify generateArtifacts to load from catalog instead of free-form generation
+- [ ] Update commitGeneration to save maturity assessment data
+- [ ] Add maturity visualization to EA Entity Browser
+- [ ] Add maturity trends to Dashboard Analytics
+- [ ] Add maturity filter to entity list
+
+### Documentation
+- [ ] Document capability catalog structure and seeding process
+- [ ] Document maturity model framework and scoring algorithm
+- [ ] Document assessment question generation logic
+- [ ] Document maturity calculation and narrative generation
+- [ ] Update AI Generation Business Logic document with new flow
+

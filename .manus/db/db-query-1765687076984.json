@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS capabilityCatalog (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  industry VARCHAR(100) NOT NULL,\n  referenceId VARCHAR(50) NOT NULL,\n  name VARCHAR(500) NOT NULL,\n  description TEXT NOT NULL,\n  level INT NOT NULL,\n  parentReferenceId VARCHAR(50),\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,\n  INDEX capability_catalog_industry_idx (industry),\n  INDEX capability_catalog_reference_idx (referenceId),\n  UNIQUE KEY capability_catalog_unique_ref (industry, referenceId)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user MCXikgkEWzjEGDB.4f9baeb9deaf --database fq5wr6YzXYEsLcWqw7mDwv --execute CREATE TABLE IF NOT EXISTS capabilityCatalog (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  industry VARCHAR(100) NOT NULL,\n  referenceId VARCHAR(50) NOT NULL,\n  name VARCHAR(500) NOT NULL,\n  description TEXT NOT NULL,\n  level INT NOT NULL,\n  parentReferenceId VARCHAR(50),\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,\n  INDEX capability_catalog_industry_idx (industry),\n  INDEX capability_catalog_reference_idx (referenceId),\n  UNIQUE KEY capability_catalog_unique_ref (industry, referenceId)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2147
+}
