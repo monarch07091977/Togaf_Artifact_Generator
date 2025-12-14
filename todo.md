@@ -1010,3 +1010,56 @@
 - [ ] Query enterprise capabilities from database (pending API implementation)
 - [ ] Verify capability catalog UI shows enterprise capabilities (pending UI implementation)
 - [ ] Test capability selection with mixed industry + enterprise capabilities (pending wizard implementation)
+
+
+## Capability Assessment Backend API (Phase 1.23 - Completed)
+
+### Capability Catalog Router
+- [x] Create capabilityCatalogRouter.ts
+- [x] Add listCapabilities query (filter by industry, search)
+- [x] Add getCapability query (by ID or referenceId)
+- [x] Add getMaturityModel query
+- [x] Register router in main routers file
+
+### Capability Assessment Router
+- [x] Create capabilityAssessmentRouter.ts
+- [x] Add createAssessment mutation (projectId, capabilityIds)
+- [x] Add getAssessment query (by ID)
+- [x] Add listAssessments query (by projectId)
+- [x] Add generateQuestions mutation (assessmentId, AI-powered)
+- [x] Add submitResponses mutation (assessmentId, responses)
+- [x] Add calculateMaturity mutation (assessmentId)
+- [x] Add generateNarrative mutation (assessmentId, AI-powered)
+- [x] Add getAssessmentResults query (full results with scores and narrative)
+- [x] Register router in main routers file
+
+### AI Services
+- [x] Create assessmentAIService.ts
+- [x] Implement generateAssessmentQuestions (capability, dimensions)
+- [x] Implement generateMaturityNarrative (capability, score, responses)
+- [x] Use LLM with structured JSON schema
+- [x] Add error handling and retry logic
+
+### Maturity Scoring Algorithm
+- [x] Create maturityScoringService.ts
+- [x] Implement weighted scoring by dimension
+- [x] Calculate overall maturity score (0-5 scale)
+- [x] Map score to maturity level (initial/developing/defined/managed/optimizing)
+- [x] Calculate dimension scores separately
+- [x] Add scoring validation logic
+
+### Database Operations
+- [ ] Add assessment CRUD helpers in server/db.ts
+- [ ] Add question CRUD helpers
+- [ ] Add response CRUD helpers
+- [ ] Add batch insert for questions
+- [ ] Add batch insert for responses
+
+### Testing
+- [ ] Test capability catalog queries
+- [ ] Test assessment creation
+- [ ] Test question generation
+- [ ] Test response submission
+- [ ] Test maturity calculation
+- [ ] Test narrative generation
+- [ ] Test complete assessment workflow

@@ -9,6 +9,8 @@ import { savedViewsRouter } from "./routers/savedViewsRouter";
 import { validationRouter } from "./routers/validationRouter";
 import { aiGenerationRouter } from "./routers/aiGenerationRouter";
 import { bulkOperationsRouter } from "./routers/bulkOperationsRouter";
+import { capabilityCatalogRouter } from "./routers/capabilityCatalogRouter";
+import { capabilityAssessmentRouter } from "./routers/capabilityAssessmentRouter";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -19,6 +21,8 @@ export const appRouter = router({
   validation: validationRouter,
   aiGeneration: aiGenerationRouter,
   bulkOperations: bulkOperationsRouter,
+  capabilityCatalog: capabilityCatalogRouter,
+  capabilityAssessment: capabilityAssessmentRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
