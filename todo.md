@@ -1114,3 +1114,12 @@
 - [x] Create maturity level indicator with color
 - [x] Create progress indicator for assessment completion
 - [x] Add tooltips and labels to charts
+
+
+## Bug Fixes (Critical)
+
+### Artifact Creation Error
+- [x] Fix database insert error when creating artifacts
+- [x] Issue: timestamp fields (generatedAt, createdAt, updatedAt) using 'default' instead of actual values
+- [x] Error: "Failed query: insert into `artifacts` values (default, ?, ?, ?, ?, default, default, ?, default, default, default)"
+- [x] Solution: Explicitly set timestamp values in artifact creation mutation

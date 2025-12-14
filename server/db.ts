@@ -129,7 +129,12 @@ export async function deleteProject(id: number) {
 export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdAt" | "updatedAt">) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(artifacts).values(data);
+  const now = new Date();
+  const result = await db.insert(artifacts).values({
+    ...data,
+    createdAt: now,
+    updatedAt: now,
+  });
   return Number(result[0].insertId);
 }
 
