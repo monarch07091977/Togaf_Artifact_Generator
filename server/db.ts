@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -130,32 +130,11 @@ export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdA
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const now = new Date();
-  
-  // Format date to MySQL datetime format (YYYY-MM-DD HH:MM:SS)
-  const formatMySQLDateTime = (date: Date) => {
-    return date.toISOString().slice(0, 19).replace('T', ' ');
-  };
-  
-  const nowFormatted = formatMySQLDateTime(now);
-  
-  // Use raw SQL to bypass Drizzle ORM issues
-  const result: any = await db.execute(
-    sql`INSERT INTO artifacts (
-      projectId, name, type, admPhase, description, content, status, generatedAt, createdAt, updatedAt
-    ) VALUES (
-      ${data.projectId},
-      ${data.name},
-      ${data.type},
-      ${data.admPhase},
-      ${data.description ?? null},
-      ${data.content ?? null},
-      ${data.status ?? "draft"},
-      ${data.generatedAt ? formatMySQLDateTime(data.generatedAt) : null},
-      ${nowFormatted},
-      ${nowFormatted}
-    )`
-  );
-  
+  const result = await db.insert(artifacts).values({
+    ...data,
+    createdAt: now,
+    updatedAt: now,
+  });
   return Number(result[0].insertId);
 }
 

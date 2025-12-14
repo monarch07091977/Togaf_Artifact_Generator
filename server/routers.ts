@@ -118,10 +118,7 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const { createArtifact } = await import("./db");
         const artifactId = await createArtifact({
-          projectId: input.projectId,
-          type: input.type,
-          name: input.name,
-          admPhase: input.admPhase,
+          ...input,
           status: "draft",
         });
         return { id: artifactId };

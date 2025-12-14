@@ -1119,9 +1119,7 @@
 ## Bug Fixes (Critical)
 
 ### Artifact Creation Error
-- [x] Fix database insert error - Date format issue in raw SQL
-- [x] Issue: Date objects being passed as "Sun Dec 14 2025 19:19:17 GMT+0000" instead of MySQL datetime
-- [x] Error: MySQL cannot parse JavaScript Date.toString() format
-- [x] Solution: Convert Date objects to MySQL datetime format (YYYY-MM-DD HH:MM:SS)
-- [x] Implemented formatMySQLDateTime helper function
-- [x] Server restarted with fix deployed
+- [x] Fix database insert error when creating artifacts
+- [x] Issue: timestamp fields (generatedAt, createdAt, updatedAt) using 'default' instead of actual values
+- [x] Error: "Failed query: insert into `artifacts` values (default, ?, ?, ?, ?, default, default, ?, default, default, default)"
+- [x] Solution: Explicitly set timestamp values in artifact creation mutation
