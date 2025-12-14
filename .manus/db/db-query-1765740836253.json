@@ -1,0 +1,29 @@
+{
+  "query": "SHOW CREATE TABLE artifacts",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user MCXikgkEWzjEGDB.4f9baeb9deaf --database fq5wr6YzXYEsLcWqw7mDwv --execute SHOW CREATE TABLE artifacts",
+  "rows": [
+    {
+      "Table": "artifacts",
+      "Create Table": "CREATE TABLE `artifacts` ("
+    }
+  ],
+  "messages": [
+    "  `id` int(11) NOT NULL AUTO_INCREMENT,",
+    "  `projectId` int(11) NOT NULL,",
+    "  `type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,",
+    "  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,",
+    "  `phase` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,",
+    "  `status` enum('not_started','in_progress','completed','reviewed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'not_started',",
+    "  `content` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `generatedContent` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,",
+    "  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+    "  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,",
+    "  KEY `artifacts_projectId_projects_id_fk` (`projectId`),",
+    "  CONSTRAINT `artifacts_projectId_projects_id_fk` FOREIGN KEY (`projectId`) REFERENCES `fq5wr6YzXYEsLcWqw7mDwv`.`projects` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=180001"
+  ],
+  "stdout": "Table\tCreate Table\nartifacts\tCREATE TABLE `artifacts` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `projectId` int(11) NOT NULL,\n  `type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `phase` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `status` enum('not_started','in_progress','completed','reviewed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'not_started',\n  `content` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `generatedContent` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,\n  KEY `artifacts_projectId_projects_id_fk` (`projectId`),\n  CONSTRAINT `artifacts_projectId_projects_id_fk` FOREIGN KEY (`projectId`) REFERENCES `fq5wr6YzXYEsLcWqw7mDwv`.`projects` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=180001\n",
+  "stderr": "",
+  "execution_time_ms": 1936
+}

@@ -141,13 +141,13 @@ export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdA
 export async function getArtifactsByProjectId(projectId: number): Promise<Artifact[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(artifacts).where(eq(artifacts.projectId, projectId)).orderBy(artifacts.admPhase, artifacts.name);
+  return db.select().from(artifacts).where(eq(artifacts.projectId, projectId)).orderBy(artifacts.phase, artifacts.name);
 }
 
 export async function getArtifactsByPhase(projectId: number, phase: string): Promise<Artifact[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(artifacts).where(and(eq(artifacts.projectId, projectId), eq(artifacts.admPhase, phase)));
+  return db.select().from(artifacts).where(and(eq(artifacts.projectId, projectId), eq(artifacts.phase, phase)));
 }
 
 export async function getArtifactById(id: number): Promise<Artifact | undefined> {

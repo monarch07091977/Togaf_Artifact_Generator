@@ -42,7 +42,7 @@ export async function exportToMarkdown(artifact: Artifact, project: Project): Pr
   const markdown = `# ${artifact.name}
 
 **Project:** ${project.name}  
-**Phase:** ${artifact.admPhase}  
+**Phase:** ${artifact.phase}  
 **Type:** ${artifact.type}  
 **Status:** ${artifact.status}  
 **Created:** ${new Date(artifact.createdAt).toLocaleDateString()}  
@@ -202,7 +202,7 @@ export async function exportDeliverable(
     const content = artifact.content || artifact.content || 'No content available';
     return `# ${artifact.name}
 
-**Phase:** ${artifact.admPhase}  
+**Phase:** ${artifact.phase}  
 **Type:** ${artifact.type}  
 **Status:** ${artifact.status}
 
@@ -226,7 +226,7 @@ ${content}
 
 ## Table of Contents
 
-${artifacts.map((a, idx) => `${idx + 1}. ${a.name} (${a.admPhase})`).join('\n')}
+${artifacts.map((a, idx) => `${idx + 1}. ${a.name} (${a.phase})`).join('\n')}
 
 ---
 
@@ -419,7 +419,7 @@ ${assumptions.map((a, idx) => `
   const markdown = `# ${artifact.name}
 
 **Project:** ${project.name}  
-**Phase:** ${artifact.admPhase}  
+**Phase:** ${artifact.phase}  
 **Type:** ${artifact.type}  
 **Status:** ${artifact.status}  
 **Created:** ${new Date(artifact.createdAt).toLocaleDateString()}  

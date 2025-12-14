@@ -123,7 +123,7 @@ export async function provideDomainExpertise(
   question: string,
   context: {
     artifactName: string;
-    admPhase: string;
+    phase: string;
     projectDescription?: string;
   }
 ): Promise<string> {
@@ -133,7 +133,7 @@ export async function provideDomainExpertise(
 
 **Context:**
 - Artifact: ${context.artifactName}
-- ADM Phase: ${context.admPhase}
+- ADM Phase: ${context.phase}
 ${context.projectDescription ? `- Project: ${context.projectDescription}` : ""}
 
 Provide:

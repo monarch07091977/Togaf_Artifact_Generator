@@ -115,12 +115,11 @@ export const artifacts = mysqlTable("artifacts", {
   id: int("id").autoincrement().primaryKey(),
   projectId: int("projectId").notNull().references(() => projects.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
-  type: varchar("type", { length: 100 }).notNull(), // Catalog, Matrix, Diagram
-  admPhase: varchar("admPhase", { length: 100 }).notNull(), // Preliminary, A, B, C, D, E, F, G, H
-  description: text("description"),
-  content: text("content"), // Generated artifact content
-  status: mysqlEnum("status", ["draft", "in_progress", "review", "approved"]).default("draft"),
-  generatedAt: timestamp("generatedAt"),
+  type: varchar("type", { length: 50 }).notNull(), // Catalog, Matrix, Diagram
+  phase: varchar("phase", { length: 50 }).notNull(), // Preliminary, A, B, C, D, E, F, G, H
+  status: mysqlEnum("status", ["not_started", "in_progress", "completed", "reviewed"]).default("not_started"),
+  content: text("content"),
+  generatedContent: text("generatedContent"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -149,12 +149,12 @@ export async function createArtifactInNotion(
     },
     pages: [{
       properties: {
-        title: `${artifact.admPhase} - ${artifact.name}`
+        title: `${artifact.phase} - ${artifact.name}`
       },
       content: `# ${artifact.name}
 
 **Type:** ${artifact.type}
-**Phase:** ${artifact.admPhase}
+**Phase:** ${artifact.phase}
 **Status:** ${artifact.status}
 **Created:** ${new Date(artifact.createdAt).toLocaleDateString()}
 
@@ -188,7 +188,7 @@ export async function updateArtifactInNotion(
     content: `# ${artifact.name}
 
 **Type:** ${artifact.type}
-**Phase:** ${artifact.admPhase}
+**Phase:** ${artifact.phase}
 **Status:** ${artifact.status}
 **Updated:** ${new Date(artifact.updatedAt).toLocaleDateString()}
 
@@ -275,7 +275,7 @@ export async function addArtifactToDatabase(
       properties: {
         "Artifact Name": artifact.name,
         "Type": artifact.type,
-        "Phase": artifact.admPhase,
+        "Phase": artifact.phase,
         "Status": artifact.status,
         "date:Created Date:start": artifact.createdAt.toISOString().split('T')[0],
         "date:Created Date:is_datetime": 0,

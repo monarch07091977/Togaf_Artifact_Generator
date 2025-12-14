@@ -30,7 +30,7 @@ export function extractDataForAutoPopulation(
     // Check if this source is relevant for the target
     const isRelevantSource =
       targetDef.inputFrom.includes(sourceArtifactDefId) ||
-      targetDef.inputFrom.includes(sourceArtifact.admPhase);
+      targetDef.inputFrom.includes(sourceArtifact.phase);
 
     if (!isRelevantSource) continue;
 
@@ -42,7 +42,7 @@ export function extractDataForAutoPopulation(
       if (!autoPopulatedData["stakeholders"]) {
         autoPopulatedData["stakeholders"] = {
           value: stakeholderResponse.answer,
-          source: `${sourceArtifact.name} (${sourceArtifact.admPhase})`,
+          source: `${sourceArtifact.name} (${sourceArtifact.phase})`,
         };
       }
     }
@@ -53,7 +53,7 @@ export function extractDataForAutoPopulation(
       if (!autoPopulatedData["objectives"]) {
         autoPopulatedData["objectives"] = {
           value: objectivesResponse.answer,
-          source: `${sourceArtifact.name} (${sourceArtifact.admPhase})`,
+          source: `${sourceArtifact.name} (${sourceArtifact.phase})`,
         };
       }
     }
@@ -64,7 +64,7 @@ export function extractDataForAutoPopulation(
       if (!autoPopulatedData["constraints"]) {
         autoPopulatedData["constraints"] = {
           value: constraintsResponse.answer,
-          source: `${sourceArtifact.name} (${sourceArtifact.admPhase})`,
+          source: `${sourceArtifact.name} (${sourceArtifact.phase})`,
         };
       }
     }
@@ -75,7 +75,7 @@ export function extractDataForAutoPopulation(
       if (!autoPopulatedData["scope"]) {
         autoPopulatedData["scope"] = {
           value: scopeResponse.answer,
-          source: `${sourceArtifact.name} (${sourceArtifact.admPhase})`,
+          source: `${sourceArtifact.name} (${sourceArtifact.phase})`,
         };
       }
     }
@@ -85,23 +85,23 @@ export function extractDataForAutoPopulation(
       const content = sourceArtifact.content;
 
       // Extract business drivers (common in early phases)
-      if (sourceArtifact.admPhase === "Phase A" || sourceArtifact.admPhase === "Preliminary") {
+      if (sourceArtifact.phase === "Phase A" || sourceArtifact.phase === "Preliminary") {
         const driversMatch = content.match(/(?:business drivers?|drivers?)[:\s]+(.*?)(?:\n\n|$)/i);
         if (driversMatch && !autoPopulatedData["business_drivers"]) {
           autoPopulatedData["business_drivers"] = {
             value: driversMatch[1].trim(),
-            source: `${sourceArtifact.name} (${sourceArtifact.admPhase})`,
+            source: `${sourceArtifact.name} (${sourceArtifact.phase})`,
           };
         }
       }
 
       // Extract principles (from Preliminary phase)
-      if (sourceArtifact.admPhase === "Preliminary" && sourceArtifact.name.includes("Principles")) {
+      if (sourceArtifact.phase === "Preliminary" && sourceArtifact.name.includes("Principles")) {
         const principlesMatch = content.match(/(?:principles?)[:\s]+(.*?)(?:\n\n|$)/i);
         if (principlesMatch && !autoPopulatedData["principles"]) {
           autoPopulatedData["principles"] = {
             value: principlesMatch[1].trim(),
-            source: `${sourceArtifact.name} (${sourceArtifact.admPhase})`,
+            source: `${sourceArtifact.name} (${sourceArtifact.phase})`,
           };
         }
       }
@@ -138,7 +138,7 @@ export function getRelevantSourceArtifacts(
 
   // Get artifacts from earlier phases that could provide input
   return allArtifacts.filter((artifact) => {
-    const artifactPhaseIndex = phaseOrder.indexOf(artifact.admPhase);
+    const artifactPhaseIndex = phaseOrder.indexOf(artifact.phase);
 
     // Only consider artifacts from earlier or same phase
     if (artifactPhaseIndex > targetPhaseIndex) return false;
@@ -151,15 +151,15 @@ export function getRelevantSourceArtifacts(
       if (artifactDefId && targetDef.inputFrom.includes(artifactDefId)) {
         return true;
       }
-      if (targetDef.inputFrom.includes(artifact.admPhase)) {
+      if (targetDef.inputFrom.includes(artifact.phase)) {
         return true;
       }
     }
 
     // Include key foundational artifacts
     if (
-      artifact.admPhase === "Preliminary" ||
-      artifact.admPhase === "Phase A" ||
+      artifact.phase === "Preliminary" ||
+      artifact.phase === "Phase A" ||
       artifact.name.includes("Principles") ||
       artifact.name.includes("Vision") ||
       artifact.name.includes("Stakeholder")

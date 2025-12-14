@@ -96,7 +96,7 @@ export default function ArtifactEditor() {
     {
       artifactId,
       artifactDefId: artifactDefId || "",
-      admPhase: artifact?.admPhase || "",
+      phase: artifact?.phase || "",
       projectId: artifact?.projectId || 0,
     },
     { enabled: !!artifact && !!artifactDefId }
@@ -231,9 +231,9 @@ export default function ArtifactEditor() {
             <h1 className="text-3xl font-bold tracking-tight">{artifact.name}</h1>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline">{artifact.type}</Badge>
-              <Badge variant="outline">{artifact.admPhase}</Badge>
+              <Badge variant="outline">{artifact.phase}</Badge>
               <Badge
-                variant={(artifact.status ?? "draft") === "approved" ? "default" : "secondary"}
+                variant={(artifact.status ?? "draft") === "completed" ? "default" : "secondary"}
                 className="text-xs"
               >
                 {(artifact.status ?? "draft").replace("_", " ")}
@@ -339,7 +339,7 @@ export default function ArtifactEditor() {
                         
                         // Check if prerequisite is completed in current project
                         const isCompleted = projectArtifacts?.some(
-                          (a) => a.name === prereq.name && a.status === "approved"
+                          (a) => a.name === prereq.name && a.status === "completed"
                         );
                         
                         return (

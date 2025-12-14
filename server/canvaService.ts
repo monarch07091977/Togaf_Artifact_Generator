@@ -45,7 +45,7 @@ export async function generatePresentationFromArtifact(
   
   // Generate design using Canva AI
   const prompt = `Create a professional TOGAF enterprise architecture presentation for "${artifact.name}". 
-Phase: ${artifact.admPhase}
+Phase: ${artifact.phase}
 Type: ${artifact.type}
 Project: ${projectName}
 
@@ -189,13 +189,13 @@ export async function createPresentationDeck(
   // Combine all artifact content
   const combinedContent = artifacts.map(a => {
     const content = a.content || a.content || '';
-    return `## ${a.name} (${a.admPhase})\n\n${content}\n\n---\n\n`;
+    return `## ${a.name} (${a.phase})\n\n${content}\n\n---\n\n`;
   }).join('');
 
   const prompt = `Create a comprehensive TOGAF enterprise architecture presentation deck for project "${projectName}".
 
 Include these sections:
-${artifacts.map((a, idx) => `${idx + 1}. ${a.name} (${a.admPhase})`).join('\n')}
+${artifacts.map((a, idx) => `${idx + 1}. ${a.name} (${a.phase})`).join('\n')}
 
 Content:
 ${combinedContent.substring(0, 2000)}...
