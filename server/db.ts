@@ -131,6 +131,13 @@ export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdA
   if (!db) throw new Error("Database not available");
   const now = new Date();
   
+  // Format date to MySQL datetime format (YYYY-MM-DD HH:MM:SS)
+  const formatMySQLDateTime = (date: Date) => {
+    return date.toISOString().slice(0, 19).replace('T', ' ');
+  };
+  
+  const nowFormatted = formatMySQLDateTime(now);
+  
   // Use raw SQL to bypass Drizzle ORM issues
   const result: any = await db.execute(
     sql`INSERT INTO artifacts (
@@ -143,9 +150,9 @@ export async function createArtifact(data: Omit<InsertArtifact, "id" | "createdA
       ${data.description ?? null},
       ${data.content ?? null},
       ${data.status ?? "draft"},
-      ${data.generatedAt ?? null},
-      ${now},
-      ${now}
+      ${data.generatedAt ? formatMySQLDateTime(data.generatedAt) : null},
+      ${nowFormatted},
+      ${nowFormatted}
     )`
   );
   

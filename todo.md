@@ -1119,9 +1119,9 @@
 ## Bug Fixes (Critical)
 
 ### Artifact Creation Error
-- [x] Fix database insert error when creating artifacts (RAW SQL SOLUTION)
-- [x] Issue: Drizzle ORM consistently generating malformed SQL regardless of code changes
-- [x] Solution: Bypassed Drizzle insert() and used raw SQL with sql template tag
-- [x] Implementation: db.execute(sql`INSERT INTO artifacts...`) with parameterized values
-- [x] Modified: server/db.ts createArtifact function
-- [x] Modified: server/routers.ts artifacts.create mutation to explicitly pass fields
+- [x] Fix database insert error - Date format issue in raw SQL
+- [x] Issue: Date objects being passed as "Sun Dec 14 2025 19:19:17 GMT+0000" instead of MySQL datetime
+- [x] Error: MySQL cannot parse JavaScript Date.toString() format
+- [x] Solution: Convert Date objects to MySQL datetime format (YYYY-MM-DD HH:MM:SS)
+- [x] Implemented formatMySQLDateTime helper function
+- [x] Server restarted with fix deployed
