@@ -770,3 +770,88 @@
 - [x] Add metadata (Version 1.0, December 8, 2025, complete header)
 - [x] Create comprehensive Markdown document (81 pages, 82K words)
 - [x] Convert to PDF format (professional formatting with manus-md-to-pdf)
+
+
+## AI-Powered Artifact Generation (Phase 1.20 - Completed)
+
+### Generation Wizard UI
+- [x] Create multi-step wizard component (AIGenerationWizard.tsx)
+- [x] Step 1: Project context (name, description, industry, scope)
+- [x] Step 2: Business drivers and goals (with add/remove chips)
+- [x] Step 3: Stakeholders and constraints (with add/remove chips)
+- [x] Step 4: Technical preferences and generation options (detail level)
+- [x] Step 5: Preview generated artifacts (entity counts, samples)
+- [x] Progress indicator and navigation (4-step progress bar with Previous/Next)
+- [ ] Save draft and resume capability (future enhancement)
+
+### AI Generation Engine
+- [x] Create generation service with LLM integration (aiGenerationService.ts)
+- [x] Design prompt templates with TOGAF 10 context
+- [x] Implement structured output parsing (JSON schema with strict mode)
+- [x] Generate business capabilities (3-15 based on detail level)
+- [x] Generate application components (3-15 based on detail level)
+- [x] Generate data entities and attributes (3-15 based on detail level)
+- [x] Generate business processes (3-15 based on detail level)
+- [x] Generate requirements (functional, non-functional, constraints, assumptions)
+- [x] Apply TOGAF 10 ADM best practices (prompt engineering)
+- [x] Handle generation errors and logging
+
+### Entity Auto-Creation
+- [x] Batch create business capabilities from AI output
+- [x] Batch create applications from AI output
+- [x] Batch create data entities from AI output
+- [x] Batch create business processes from AI output
+- [x] Batch create requirements from AI output
+- [x] Set appropriate maturity levels (default: developing)
+- [x] Set lifecycle stages (default: plan)
+- [x] Populate all entity attributes (name, description, normalizedName, etc.)
+- [x] Create ID mapping for relationship creation
+
+### Relationship Auto-Mapping
+- [x] Analyze entity dependencies from AI output
+- [x] Create SUPPORTS relationships (capabilities ↔ processes)
+- [x] Create REALIZES relationships (applications ↔ capabilities)
+- [x] Create USES relationships (applications ↔ data)
+- [x] Create TRACES_TO relationships (requirements ↔ entities)
+- [x] Create DEPENDS_ON relationships (cross-entity dependencies)
+- [x] Create PROVIDES_DATA_TO relationships (data → applications)
+- [x] Create CONSUMES_DATA_FROM relationships (applications → data)
+- [x] Validate relationship consistency (skip if source/target not found)
+
+### Artifact Content Generation
+- [x] Generate entity descriptions with context (LLM-generated)
+- [x] Generate relationship descriptions (LLM-generated)
+- [x] Apply naming conventions automatically (professional, descriptive)
+- [x] Generate normalized names for entities (lowercase, underscores)
+- [x] Populate entity-specific fields (priority, sensitivity, maturity, lifecycle, type)
+- [ ] Generate metadata (tags, categories) (future enhancement)
+
+### Preview & Refinement Interface
+- [x] Show generation preview before committing (Step 5)
+- [x] Display entity count by type (6 color-coded cards)
+- [x] Display relationship count
+- [x] Show sample entities (first 3 business capabilities)
+- [x] Commit all or regenerate options
+- [ ] Allow editing generated entities (future enhancement)
+- [ ] Allow editing generated relationships (future enhancement)
+- [ ] Regenerate specific sections (future enhancement)
+
+### Backend API
+- [x] Create aiGeneration router (aiGenerationRouter.ts)
+- [x] Add generateArtifacts mutation (calls LLM, returns JSON)
+- [x] Add commitGeneration mutation (batch insert with ID mapping)
+- [x] Register router in main routers file
+- [ ] Add saveGenerationDraft mutation (future enhancement)
+- [ ] Add getGenerationDraft query (future enhancement)
+- [ ] Add regenerateSection mutation (future enhancement)
+- [ ] Transaction support for atomic commits (future enhancement)
+
+### Integration
+- [x] Add "AI Generate" button to project page (prominent default variant)
+- [x] Add generation wizard route (/projects/:projectId/ai-generate)
+- [x] Link to EA Entity Browser after generation (automatic redirect)
+- [x] Import Sparkles icon for AI branding
+- [x] Create comprehensive business logic documentation (AI_Generation_Business_Logic.md)
+- [ ] Show generation history (future enhancement)
+- [ ] Allow re-generation with different parameters (future enhancement)
+

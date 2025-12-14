@@ -7,6 +7,7 @@ import { eaEntityRouter } from "./eaEntityRouter";
 import { analyticsRouter } from "./routers/analyticsRouter";
 import { savedViewsRouter } from "./routers/savedViewsRouter";
 import { validationRouter } from "./routers/validationRouter";
+import { aiGenerationRouter } from "./routers/aiGenerationRouter";
 import { bulkOperationsRouter } from "./routers/bulkOperationsRouter";
 
 export const appRouter = router({
@@ -16,6 +17,7 @@ export const appRouter = router({
   analytics: analyticsRouter,
   savedViews: savedViewsRouter,
   validation: validationRouter,
+  aiGeneration: aiGenerationRouter,
   bulkOperations: bulkOperationsRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),

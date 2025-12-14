@@ -12,6 +12,7 @@ import EAEntityBrowser from "./pages/EAEntityBrowser";
 import AuditHistory from "./pages/AuditHistory";
 import Dashboard from "./pages/Dashboard";
 import ValidationDashboard from "./pages/ValidationDashboard";
+import AIGenerationWizard from "./pages/AIGenerationWizard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -24,7 +25,8 @@ function Router() {
       <Route path="/projects/:projectId/ea-entities" component={EAEntityBrowser} />
       <Route path="/projects/:projectId/audit-history" component={AuditHistory} />
       <Route path="/projects/:id/dashboard" component={Dashboard} />
-      <Route path="/projects/:id/validation" component={ValidationDashboard} />
+      <Route path="/projects/:projectId/validation" component={ValidationDashboard} />
+      <Route path="/projects/:projectId/ai-generate" component={AIGenerationWizard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
