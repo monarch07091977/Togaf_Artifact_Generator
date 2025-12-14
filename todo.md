@@ -977,3 +977,36 @@
 - [ ] Document maturity calculation and narrative generation
 - [ ] Update AI Generation Business Logic document with new flow
 
+
+
+## Enterprise Support Capabilities Expansion (Phase 1.22 - Completed)
+
+### Capability Design
+- [x] Design Financial Management capabilities (8 capabilities)
+- [x] Design Human Resources capabilities (8 capabilities)
+- [x] Design Sales & Marketing capabilities (8 capabilities)
+- [x] Design Information Technology capabilities (8 capabilities)
+- [x] Design Procurement & Supply Chain capabilities (5 capabilities)
+- [x] Design Legal & Compliance capabilities (5 capabilities)
+- [x] Design Corporate Strategy & Planning capabilities (3 capabilities)
+- [x] Total: 45 enterprise support capabilities
+
+### Database Population
+- [x] Update seedCapabilityCatalog.ts with enterprise capabilities
+- [x] Use "Enterprise" as industry category
+- [x] Use ES.* reference ID prefix (ES.FIN.*, ES.HR.*, ES.SALES.*, ES.IT.*, ES.PROC.*, ES.LEGAL.*, ES.STRAT.*)
+- [x] Run seed script to populate database
+- [x] Verify all 45 capabilities inserted correctly
+- [x] Total capability catalog: 133 capabilities (88 industry + 45 enterprise)
+
+### Documentation
+- [x] Enterprise capabilities fully documented in seed script
+- [x] Comprehensive capability coverage across all business functions
+- [ ] Update implementation guide with enterprise capabilities list (future)
+- [ ] Document capability selection strategy (future)
+
+### Testing
+- [x] Seed script executed successfully (133 capabilities total)
+- [ ] Query enterprise capabilities from database (pending API implementation)
+- [ ] Verify capability catalog UI shows enterprise capabilities (pending UI implementation)
+- [ ] Test capability selection with mixed industry + enterprise capabilities (pending wizard implementation)

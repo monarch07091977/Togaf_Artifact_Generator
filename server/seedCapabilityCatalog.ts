@@ -857,6 +857,383 @@ const PUBLIC_SECTOR_CAPABILITIES = [
   }
 ];
 
+// Enterprise Support Capabilities (Cross-Industry)
+const ENTERPRISE_CAPABILITIES = [
+  // Financial Management
+  {
+    industry: "Enterprise",
+    referenceId: "ES.FIN.01",
+    name: "Financial Planning & Budgeting",
+    description: "Develop financial plans, budgets, and forecasts to guide organizational financial decisions",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.FIN.02",
+    name: "Accounts Payable & Receivable",
+    description: "Manage vendor payments, customer invoicing, and cash collection processes",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.FIN.03",
+    name: "General Ledger & Financial Reporting",
+    description: "Maintain general ledger, prepare financial statements, and ensure compliance with accounting standards",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.FIN.04",
+    name: "Treasury & Cash Management",
+    description: "Manage cash flow, liquidity, investments, and banking relationships",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.FIN.05",
+    name: "Financial Compliance & Audit",
+    description: "Ensure compliance with financial regulations, support internal/external audits",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.FIN.06",
+    name: "Tax Management",
+    description: "Manage tax compliance, planning, and reporting across all jurisdictions",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.FIN.07",
+    name: "Cost Accounting & Analysis",
+    description: "Track costs, analyze profitability, and support pricing decisions",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.FIN.08",
+    name: "Financial Risk Management",
+    description: "Identify, assess, and mitigate financial risks including credit, market, and operational risks",
+    level: 1,
+    parentReferenceId: null
+  },
+
+  // Human Resources
+  {
+    industry: "Enterprise",
+    referenceId: "ES.HR.01",
+    name: "Talent Acquisition & Recruitment",
+    description: "Attract, source, and hire qualified candidates to meet organizational staffing needs",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.HR.02",
+    name: "Employee Onboarding & Offboarding",
+    description: "Manage new hire orientation, integration, and employee exit processes",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.HR.03",
+    name: "Performance Management",
+    description: "Set goals, conduct performance reviews, and manage employee development plans",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.HR.04",
+    name: "Learning & Development",
+    description: "Design and deliver training programs to enhance employee skills and capabilities",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.HR.05",
+    name: "Compensation & Benefits Administration",
+    description: "Manage salary structures, incentive programs, and employee benefits",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.HR.06",
+    name: "HR Analytics & Workforce Planning",
+    description: "Analyze workforce data, forecast staffing needs, and support strategic workforce decisions",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.HR.07",
+    name: "Employee Relations & Engagement",
+    description: "Foster positive employee relations, manage conflicts, and drive employee engagement",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.HR.08",
+    name: "HR Compliance & Policy Management",
+    description: "Ensure compliance with labor laws, manage HR policies, and maintain employee records",
+    level: 1,
+    parentReferenceId: null
+  },
+
+  // Sales & Marketing
+  {
+    industry: "Enterprise",
+    referenceId: "ES.SALES.01",
+    name: "Sales Planning & Forecasting",
+    description: "Develop sales strategies, set targets, and forecast revenue",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.SALES.02",
+    name: "Lead Management & CRM",
+    description: "Capture, qualify, and nurture sales leads through the sales funnel",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.SALES.03",
+    name: "Opportunity Management",
+    description: "Manage sales opportunities, proposals, and deal negotiations",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.SALES.04",
+    name: "Marketing Campaign Management",
+    description: "Plan, execute, and measure marketing campaigns across channels",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.SALES.05",
+    name: "Customer Service & Support",
+    description: "Provide customer assistance, resolve issues, and manage service requests",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.SALES.06",
+    name: "Channel & Partner Management",
+    description: "Manage relationships with distributors, resellers, and strategic partners",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.SALES.07",
+    name: "Brand Management & Communications",
+    description: "Build and protect brand identity, manage corporate communications",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.SALES.08",
+    name: "Market Intelligence & Analytics",
+    description: "Gather market insights, analyze customer behavior, and track competitive landscape",
+    level: 1,
+    parentReferenceId: null
+  },
+
+  // Information Technology
+  {
+    industry: "Enterprise",
+    referenceId: "ES.IT.01",
+    name: "IT Service Management",
+    description: "Manage IT service delivery, incident resolution, and service desk operations",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.IT.02",
+    name: "Application Development & Maintenance",
+    description: "Develop, enhance, and maintain business applications and systems",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.IT.03",
+    name: "Infrastructure & Operations",
+    description: "Manage servers, networks, storage, and IT infrastructure operations",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.IT.04",
+    name: "Cybersecurity & Information Security",
+    description: "Protect information assets, manage security risks, and ensure compliance",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.IT.05",
+    name: "Data Management & Analytics",
+    description: "Manage data assets, ensure data quality, and enable analytics capabilities",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.IT.06",
+    name: "Cloud Services & Architecture",
+    description: "Design, implement, and manage cloud infrastructure and services",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.IT.07",
+    name: "Enterprise Architecture",
+    description: "Define IT strategy, architecture standards, and technology roadmaps",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.IT.08",
+    name: "IT Vendor & Contract Management",
+    description: "Manage relationships with IT vendors, software licenses, and service contracts",
+    level: 1,
+    parentReferenceId: null
+  },
+
+  // Procurement & Supply Chain
+  {
+    industry: "Enterprise",
+    referenceId: "ES.PROC.01",
+    name: "Strategic Sourcing",
+    description: "Develop sourcing strategies, identify suppliers, and negotiate contracts",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.PROC.02",
+    name: "Procurement Operations",
+    description: "Process purchase requisitions, issue purchase orders, and manage procurement transactions",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.PROC.03",
+    name: "Supplier Relationship Management",
+    description: "Manage supplier performance, conduct evaluations, and foster strategic partnerships",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.PROC.04",
+    name: "Contract Management",
+    description: "Manage contract lifecycle from negotiation through execution and renewal",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.PROC.05",
+    name: "Spend Analytics & Category Management",
+    description: "Analyze spending patterns, manage procurement categories, and identify savings opportunities",
+    level: 1,
+    parentReferenceId: null
+  },
+
+  // Legal & Compliance
+  {
+    industry: "Enterprise",
+    referenceId: "ES.LEGAL.01",
+    name: "Legal Operations & Contract Review",
+    description: "Provide legal counsel, review contracts, and manage legal documentation",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.LEGAL.02",
+    name: "Regulatory Compliance Management",
+    description: "Monitor regulatory changes, ensure compliance, and manage regulatory reporting",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.LEGAL.03",
+    name: "Enterprise Risk Management",
+    description: "Identify, assess, and mitigate enterprise risks across all business areas",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.LEGAL.04",
+    name: "Intellectual Property Management",
+    description: "Protect and manage patents, trademarks, copyrights, and trade secrets",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.LEGAL.05",
+    name: "Corporate Governance",
+    description: "Support board governance, manage corporate policies, and ensure ethical business practices",
+    level: 1,
+    parentReferenceId: null
+  },
+
+  // Corporate Strategy & Planning
+  {
+    industry: "Enterprise",
+    referenceId: "ES.STRAT.01",
+    name: "Strategic Planning & Execution",
+    description: "Develop corporate strategy, set strategic objectives, and monitor execution",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.STRAT.02",
+    name: "Business Performance Management",
+    description: "Define KPIs, monitor business performance, and drive continuous improvement",
+    level: 1,
+    parentReferenceId: null
+  },
+  {
+    industry: "Enterprise",
+    referenceId: "ES.STRAT.03",
+    name: "Portfolio & Program Management",
+    description: "Manage project portfolios, prioritize investments, and oversee program delivery",
+    level: 1,
+    parentReferenceId: null
+  }
+];
+
 export async function seedCapabilityCatalog() {
   const db = await getDb();
   if (!db) {
@@ -934,13 +1311,33 @@ export async function seedCapabilityCatalog() {
     }
     console.log("[Seed] ✓ Public Sector capabilities inserted");
 
+    // 6. Seed Enterprise Support Capabilities
+    console.log(`[Seed] Inserting ${ENTERPRISE_CAPABILITIES.length} Enterprise Support capabilities...`);
+    for (const cap of ENTERPRISE_CAPABILITIES) {
+      await db.insert(capabilityCatalog).values(cap).onDuplicateKeyUpdate({
+        set: {
+          name: cap.name,
+          description: cap.description,
+          level: cap.level,
+          parentReferenceId: cap.parentReferenceId,
+        }
+      });
+    }
+    console.log("[Seed] ✓ Enterprise Support capabilities inserted");
+
     console.log("[Seed] ✅ Capability catalog seeding completed successfully!");
     console.log(`[Seed] Total capabilities inserted: ${
       OIL_GAS_CAPABILITIES.length +
       CHEMICAL_CAPABILITIES.length +
       MANUFACTURING_CAPABILITIES.length +
-      PUBLIC_SECTOR_CAPABILITIES.length
+      PUBLIC_SECTOR_CAPABILITIES.length +
+      ENTERPRISE_CAPABILITIES.length
     }`);
+    console.log(`[Seed]   - Oil & Gas: ${OIL_GAS_CAPABILITIES.length}`);
+    console.log(`[Seed]   - Chemical: ${CHEMICAL_CAPABILITIES.length}`);
+    console.log(`[Seed]   - Manufacturing: ${MANUFACTURING_CAPABILITIES.length}`);
+    console.log(`[Seed]   - Public Sector: ${PUBLIC_SECTOR_CAPABILITIES.length}`);
+    console.log(`[Seed]   - Enterprise Support: ${ENTERPRISE_CAPABILITIES.length}`);
 
   } catch (error) {
     console.error("[Seed] Error seeding capability catalog:", error);
